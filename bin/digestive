@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+from concurrent.futures import ThreadPoolExecutor, wait
+from math import log2
+import sys
+
+from digestive import Source
+from digestive.entropy import Entropy
+from digestive.hash import MD5, SHA1, SHA256, SHA512
+
+
+_sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'EiB', 'ZiB']
+
+
+def file_size(size):
+    order = int(log2(size) // 10)
+    return '{:.4g} {}'.format(size / (1 << (order * 10)), _sizes[order])
+
+# TODO: arguments parsing (switch sinks or comma-separated? recursive, ?)
+# TODO: progress
+
+
+if __name__ == '__main__':
+    with ThreadPoolExecutor(8) as executor:
+        for file in sys.argv[1:]:
+            with Source(file) as source:
+                sinks = (MD5(), SHA1(), SHA256(), SHA512(), Entropy())
+
+                print('{} ({})'.format(file, file_size(len(source))))
+                generator = source.blocks()
+                block = next(generator, False)
+                while block:
+                    futures = [executor.submit(sink.update, block) for sink in sinks]
+                    block = next(generator, False)
+                    wait(futures)
+
+                for sink in sinks:
+                    print('  {:<12} {}'.format(sink.name, sink.digest()))
