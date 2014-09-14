@@ -7,9 +7,11 @@ python:
   - pypy3
 
 install:
+  - pip install flake8
   - pip install coveralls
 
 script:
+  - flake8 --max-line-length=120 digestive
   - coverage run --source digestive -m py.test
 
 after_success:
