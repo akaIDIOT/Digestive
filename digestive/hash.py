@@ -27,9 +27,9 @@ class SHA1(HashDigest):
 
 class SHA256(HashDigest):
     def __init__(self):
-        super().__init__('sha2-256', hashlib.sha256())
+        super().__init__('sha256', hashlib.sha256())
 
 
 class SHA512(HashDigest):
     def __init__(self):
-        super().__init__('sha2-512', hashlib.sha512())
+        super().__init__('sha512', hashlib.sha512())
