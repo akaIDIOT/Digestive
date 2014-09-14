@@ -1,5 +1,5 @@
 from collections import Counter
-from math import log2
+from math import log
 
 from digestive.io import Sink
 
@@ -16,5 +16,5 @@ class Entropy(Sink):
 
     def digest(self):
         # calculate binary entropy as -Σ(1…n) p_i × log₂(p_i)
-        entropy = -sum(count / self.length * log2(count / self.length) for count in self.counter.values())
+        entropy = -sum(count / self.length * log(count / self.length, 2) for count in self.counter.values())
         return '{:.8f}'.format(entropy)

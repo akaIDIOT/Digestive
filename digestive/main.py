@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor, wait
-from math import log2
+from math import log
 
 from digestive.entropy import Entropy
 from digestive.hash import MD5, SHA1, SHA256, SHA512
@@ -11,7 +11,7 @@ _sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'EiB', 'ZiB']
 
 
 def file_size(size):
-    order = int(log2(size) // 10)
+    order = int(log(size, 2) // 10)
     return '{:.4g} {}'.format(size / (1 << (order * 10)), _sizes[order])
 
 
