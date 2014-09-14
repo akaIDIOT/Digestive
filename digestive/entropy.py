@@ -1,0 +1,23 @@
+from collections import Counter
+from math import log2
+
+from digestive import Sink
+
+
+# TODO: stash intermediate histograms in multiple Counters?
+# TODO: output as a spark
+# TODO: output as plot
+class Entropy(Sink):
+    def __init__(self):
+        super().__init__('entropy')
+        self.length = 0
+        self.counter = Counter()
+
+    def update(self, data):
+        self.length += len(data)
+        self.counter.update(data)
+
+    def digest(self):
+        # calculate binary entropy as -Σ(1…n) p_i × log₂(p_i)
+        entropy = -sum(count / self.length * log2(count / self.length) for count in self.counter.values())
+        return '{:.8f}'.format(entropy)
