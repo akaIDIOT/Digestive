@@ -11,12 +11,15 @@ _sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB']
 
 
 def file_size(size):
-    order = int(log(size, 2) // 10)
+    order = int(log(size, 2) // 10) if size else 0
+    if order >= len(_sizes):
+        # exceeding ludicrous file sizes, default to bytes
+        return '{} bytes'.format(size)
     return '{:.4g} {}'.format(size / (1 << (order * 10)), _sizes[order])
 
 
-def parse_arguments(args=None):
-    parser = ArgumentParser(args)
+def parse_arguments(arguments=None):
+    parser = ArgumentParser()
     # hash digest sinks
     parser.add_argument('-m', '--md5', action='append_const', dest='sinks', const=MD5)
     parser.add_argument('-1', '--sha1', action='append_const', dest='sinks', const=SHA1)
@@ -28,6 +31,7 @@ def parse_arguments(args=None):
     parser.add_argument('-e', '--entropy', action='append_const', dest='sinks', const=Entropy)
     # misc options
     parser.add_argument('-j', '--jobs', type=int)
+    # TODO: -b, --block-size
     # TODO: -t, --time
     # TODO: -p, --progress
     # TODO: refuse --progress when outputting to a dumb terminal
@@ -35,21 +39,21 @@ def parse_arguments(args=None):
     # positional arguments: sources
     parser.add_argument('sources', metavar='FILE', nargs='+')
 
-    args = parser.parse_args()
-    process_args(args, parser)
+    arguments = parser.parse_args(arguments)
+    process_arguments(arguments, parser)
 
-    return args
+    return arguments
 
 
-def process_args(args, parser):
-    if not args.sinks:
+def process_arguments(arguments, parser):
+    if not arguments.sinks:
         parser.error('at least one sink is required')
 
-    args.jobs = args.jobs if args.jobs else len(args.sinks)
+    arguments.jobs = arguments.jobs if arguments.jobs else len(arguments.sinks)
 
 
-def run(executor, source, sinks):
-    generator = source.blocks()
+def process_source(executor, source, sinks, block_size=1 << 20):
+    generator = source.blocks(block_size)
     block = next(generator, False)
     while block:
         futures = [executor.submit(sink.update, block) for sink in sinks]
@@ -57,17 +61,17 @@ def run(executor, source, sinks):
         wait(futures)
 
 
-def main():
-    args = parse_arguments()
+def main(arguments=None):
+    arguments = parse_arguments(arguments)
 
-    with ThreadPoolExecutor(args.jobs) as executor:
-        for file in args.sources:
+    with ThreadPoolExecutor(arguments.jobs) as executor:
+        for file in arguments.sources:
             with Source(file) as source:
                 # instantiate sinks from requested types
-                sinks = [sink() for sink in args.sinks]
+                sinks = [sink() for sink in arguments.sinks]
                 print('{} ({})'.format(file, file_size(len(source))))
 
-                run(executor, source, sinks)
+                process_source(executor, source, sinks)
 
                 for sink in sinks:
                     print('  {:<12} {}'.format(sink.name, sink.digest()))

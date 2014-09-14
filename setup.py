@@ -22,7 +22,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'mock'],
     entry_points={
         'console_scripts': {
             'digestive = digestive.main:main'
