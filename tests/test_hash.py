@@ -1,10 +1,15 @@
+from os import path
+
 from digestive import Source
 from digestive.hash import MD5, SHA1, SHA256, SHA512
 
 
+here = path.dirname(path.abspath(__file__))
+
+
 def test_empty():
     sinks = [MD5(), SHA1(), SHA256(), SHA512()]
-    with Source('test/files/empty') as source:
+    with Source(path.join(here, 'files/empty')) as source:
         buffer = bytearray(0)
         source.readinto(buffer)
 
@@ -12,13 +17,13 @@ def test_empty():
             sink.update(buffer)
 
     hashes = [
-        # md5sum test/files/empty
+        # md5sum files/empty
         'd41d8cd98f00b204e9800998ecf8427e',
-        # sha1sum test/files/empty
+        # sha1sum files/empty
         'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-        # sha256sum test/files/empty
+        # sha256sum files/empty
         'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-        # sha512sum test/files/empty
+        # sha512sum files/empty
         'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce'
         '47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e',
     ]
@@ -28,20 +33,20 @@ def test_empty():
 
 def test_1234():
     sinks = [MD5(), SHA1(), SHA256(), SHA512()]
-    with Source('test/files/1234') as source:
+    with Source(path.join(here, 'files/1234')) as source:
         buffer = bytearray(4)
         source.readinto(buffer)
         for sink in sinks:
             sink.update(buffer)
 
     hashes = [
-        # md5sum test/files/1234
+        # md5sum files/1234
         '08d6c05a21512a79a1dfeb9d2a8f262f',
-        # sha1sum test/files/1234
+        # sha1sum files/1234
         '12dada1fff4d4787ade3333147202c3b443e376f',
-        # sha256sum test/files/1234
+        # sha256sum files/1234
         '9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a',
-        # sha512sum test/files/1234
+        # sha512sum files/1234
         'a7c976db1723adb41274178dc82e9b777941ab201c69de61d0f2bc6d27a3598f'
         '594fa748e50d88d3c2bf1e2c2e72c3cfef78c3c6d4afa90391f7e33ababca48e',
     ]

@@ -1,12 +1,16 @@
+from os import path
 import pytest
 
 from digestive import Source
 
 
-def test_empty():
-    source = Source('test/files/empty')
+here = path.dirname(path.abspath(__file__))
 
-    assert source.source == 'test/files/empty'
+
+def test_empty():
+    source = Source(path.join(here, 'files/empty'))
+
+    assert source.source.endswith('/files/empty')
     assert source.fd is None
     assert len(source) == 0
 
@@ -19,7 +23,7 @@ def test_empty():
 
 
 def test_1234():
-    source = Source('test/files/1234')
+    source = Source(path.join(here, 'files/1234'))
 
     assert len(source) == 4
 
@@ -33,7 +37,7 @@ def test_1234():
 
 
 def test_blocks():
-    source = Source('test/files/1234')
+    source = Source(path.join(here, 'files/1234'))
 
     with source:
         for (read, expected) in zip(source.blocks(2), (b'\x01\x02', b'\x03\x04')):
