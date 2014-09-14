@@ -1,7 +1,18 @@
 from argparse import ArgumentParser
+from concurrent.futures import ThreadPoolExecutor, wait
+from math import log2
 
 from digestive.entropy import Entropy
 from digestive.hash import MD5, SHA1, SHA256, SHA512
+from digestive.io import Source
+
+
+_sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'EiB', 'ZiB']
+
+
+def file_size(size):
+    order = int(log2(size) // 10)
+    return '{:.4g} {}'.format(size / (1 << (order * 10)), _sizes[order])
 
 
 def parse_arguments(args=None):
@@ -33,3 +44,28 @@ def process_args(args, parser):
         parser.error('at least one sink is required')
 
     args.jobs = args.jobs if args.jobs else len(args.sinks)
+
+
+def run(executor, source, sinks):
+    generator = source.blocks()
+    block = next(generator, False)
+    while block:
+        futures = [executor.submit(sink.update, block) for sink in sinks]
+        block = next(generator, False)
+        wait(futures)
+
+
+def main():
+    args = parse_arguments()
+
+    with ThreadPoolExecutor(args.jobs) as executor:
+        for file in args.sources:
+            with Source(file) as source:
+                # instantiate sinks from requested types
+                sinks = [sink() for sink in args.sinks]
+                print('{} ({})'.format(file, file_size(len(source))))
+
+                run(executor, source, sinks)
+
+                for sink in sinks:
+                    print('  {:<12} {}'.format(sink.name, sink.digest()))
