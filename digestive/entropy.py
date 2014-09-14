@@ -1,7 +1,7 @@
 from collections import Counter
 from math import log2
 
-from digestive import Sink
+from digestive.io import Sink
 
 
 class Entropy(Sink):

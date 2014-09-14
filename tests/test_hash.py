@@ -1,7 +1,7 @@
 from os import path
 
-from digestive import Source
 from digestive.hash import MD5, SHA1, SHA256, SHA512
+from digestive.io import Source
 
 
 here = path.dirname(path.abspath(__file__))

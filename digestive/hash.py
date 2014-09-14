@@ -1,6 +1,6 @@
 import hashlib
 
-from digestive import Sink
+from digestive.io import Sink
 
 
 class HashDigest(Sink):

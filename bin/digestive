@@ -4,9 +4,9 @@ from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor, wait
 from math import log2
 
-from digestive import Source
 from digestive.entropy import Entropy
 from digestive.hash import MD5, SHA1, SHA256, SHA512
+from digestive.io import Source
 
 
 _sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'EiB', 'ZiB']

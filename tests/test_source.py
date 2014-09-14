@@ -1,7 +1,7 @@
 from os import path
 import pytest
 
-from digestive import Source
+from digestive.io import Source
 
 
 here = path.dirname(path.abspath(__file__))
