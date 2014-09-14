@@ -7,7 +7,7 @@ from digestive.hash import MD5, SHA1, SHA256, SHA512
 from digestive.io import Source
 
 
-_sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'EiB', 'ZiB']
+_sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB']
 
 
 def file_size(size):
@@ -22,6 +22,8 @@ def parse_arguments(args=None):
     parser.add_argument('-1', '--sha1', action='append_const', dest='sinks', const=SHA1)
     parser.add_argument('-2', '--sha256', action='append_const', dest='sinks', const=SHA256)
     parser.add_argument('-5', '--sha512', action='append_const', dest='sinks', const=SHA512)
+    # convenience switch to include all hashes
+    parser.add_argument('--hashes', action='store_const', dest='sinks', const=(MD5, SHA1, SHA256, SHA512))
     # entropy sink
     parser.add_argument('-e', '--entropy', action='append_const', dest='sinks', const=Entropy)
     # misc options
