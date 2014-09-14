@@ -23,5 +23,9 @@ setup(
         'Programming Language :: Python :: 3.4',
     ],
     tests_require=['pytest'],
-    scripts=['bin/digestive'],  # TODO: turn this into an entry_points=
+    entry_points={
+        'console_scripts': {
+            'digestive = digestive.main:main'
+        }
+    }
 )
