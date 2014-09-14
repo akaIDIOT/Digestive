@@ -4,9 +4,6 @@ from math import log2
 from digestive import Sink
 
 
-# TODO: stash intermediate histograms in multiple Counters?
-# TODO: output as a spark
-# TODO: output as plot
 class Entropy(Sink):
     def __init__(self):
         super().__init__('entropy')
