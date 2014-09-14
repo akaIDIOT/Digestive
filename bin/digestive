@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor, wait
 from math import log2
-import sys
 
 from digestive import Source
 from digestive.entropy import Entropy
@@ -16,16 +16,35 @@ def file_size(size):
     order = int(log2(size) // 10)
     return '{:.4g} {}'.format(size / (1 << (order * 10)), _sizes[order])
 
-# TODO: arguments parsing (switch sinks or comma-separated? recursive, ?)
-# TODO: progress
-
 
 if __name__ == '__main__':
-    with ThreadPoolExecutor(8) as executor:
-        for file in sys.argv[1:]:
-            with Source(file) as source:
-                sinks = (MD5(), SHA1(), SHA256(), SHA512(), Entropy())
+    parser = ArgumentParser()
+    # hash digest sinks
+    parser.add_argument('-m', '--md5', action='append_const', dest='sinks', const=MD5)
+    parser.add_argument('-1', '--sha1', action='append_const', dest='sinks', const=SHA1)
+    parser.add_argument('-2', '--sha256', action='append_const', dest='sinks', const=SHA256)
+    parser.add_argument('-5', '--sha512', action='append_const', dest='sinks', const=SHA512)
+    # entropy sink
+    parser.add_argument('-e', '--entropy', action='append_const', dest='sinks', const=Entropy)
+    # misc options
+    parser.add_argument('-j', '--jobs', type=int)
+    # TODO: -t, --time
+    # TODO: -p, --progress
+    # TODO: -r, --recursive
+    # positional arguments: sources
+    parser.add_argument('sources', metavar='FILE', nargs='+')
 
+    args = parser.parse_args()
+
+    # post-process args as needed
+    num_threads = args.jobs if args.jobs else len(args.sinks)
+    # TODO: refuse --progress when outputting to a dumb terminal
+
+    with ThreadPoolExecutor(num_threads) as executor:
+        for file in args.sources:
+            with Source(file) as source:
+                # instantiate sinks from requested types
+                sinks = [sink() for sink in args.sinks]
                 print('{} ({})'.format(file, file_size(len(source))))
                 generator = source.blocks()
                 block = next(generator, False)
