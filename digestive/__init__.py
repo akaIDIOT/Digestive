@@ -45,6 +45,7 @@ class Source:
 
     def close(self):
         self.fd.close()
+        self.fd = None
 
 
 class Sink:
