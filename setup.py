@@ -9,7 +9,7 @@ setup(
     version=digestive.__version__,
     url='https://github.com/akaIDIOT/Digestive',
     packages=find_packages(),
-    description='TODO',
+    description='Run several digest algorithms on the same data efficiently',
     author='Mattijs Ugen',
     author_email=codecs.encode('nxnvqvbg@hfref.abercyl.tvguho.pbz', 'rot_13'),
     license='ISC',
