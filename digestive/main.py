@@ -11,6 +11,12 @@ _sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB']
 
 
 def file_size(size):
+    """
+    Converts a byte size into a human-readable format using binary prefixes.
+
+    :param size: The value to be formatted.
+    :return: A human-readable file size.
+    """
     order = int(log(size, 2) // 10) if size else 0
     if order >= len(_sizes):
         # exceeding ludicrous file sizes, default to bytes
@@ -19,6 +25,12 @@ def file_size(size):
 
 
 def parse_arguments(arguments=None):
+    """
+    Parses commandline arguments defining both program options and input and output.
+
+    :param arguments: The arguments to parse, or None. Arguments will be read from sys.argv if None.
+    :return: An argparse.Namespace object.
+    """
     parser = ArgumentParser(description='run multiple digests on files')
     # hash digest sinks
     parser.add_argument('-m', '--md5', action='append_const', dest='sinks', const=MD5,
@@ -54,6 +66,13 @@ def parse_arguments(arguments=None):
 
 
 def process_arguments(arguments, parser):
+    """
+    Post-processes parsed arguments.
+
+    :param arguments: The arguments to be processed (an argparse.Namespace object).
+    :param parser: The parser used to parse the arguments (used for error reporting).
+    :return: The passed arguments, adjusted where needed.
+    """
     if not arguments.sinks:
         parser.error('at least one sink is required')
 
@@ -61,6 +80,14 @@ def process_arguments(arguments, parser):
 
 
 def process_source(executor, source, sinks, block_size=1 << 20):
+    """
+    Processes a data source, feeding chunks of at most block_size to each sink in parallel.
+
+    :param executor: The executor to submit execution jobs to.
+    :param source: The data source to read from.
+    :param sinks: The sink instances to process data chunks with.
+    :param block_size: The maximum chunk size to read.
+    """
     generator = source.blocks(block_size)
     block = next(generator, False)
     while block:
@@ -70,6 +97,11 @@ def process_source(executor, source, sinks, block_size=1 << 20):
 
 
 def main(arguments=None):
+    """
+    Runs digestive.
+
+    :param arguments: Commandline arguments, passed to parse_arguments.
+    """
     arguments = parse_arguments(arguments)
 
     with ThreadPoolExecutor(arguments.jobs) as executor:

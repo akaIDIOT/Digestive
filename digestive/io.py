@@ -22,6 +22,12 @@ class Source:
         self.fd = open(self.source, 'rb')
 
     def readinto(self, buffer):
+        """
+        Read data from this source in buffer.
+
+        :param buffer: The buffer to read into.
+        :return: The number of bytes read.
+        """
         return self.fd.readinto(buffer)
 
     def blocks(self, block_size=1 << 20):
