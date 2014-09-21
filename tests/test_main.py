@@ -1,12 +1,12 @@
 from argparse import Namespace
 from concurrent.futures import ThreadPoolExecutor
-from mock import Mock
+from mock import Mock, patch
 from os import path
 
 from digestive.entropy import Entropy
 from digestive.hash import MD5, SHA1, SHA256, SHA512
 from digestive.io import Source
-from digestive.main import file_size, parse_arguments, process_arguments, process_source
+from digestive.main import file_size, main, parse_arguments, process_arguments, process_source
 
 
 here = path.dirname(path.abspath(__file__))
@@ -90,4 +90,13 @@ def test_process_source():
 
         assert sink.update.call_count == 4
 
-# TODO: test main()
+
+def test_main():
+    with patch('builtins.print') as mocked:
+        arguments = ['--hashes', path.join(here, 'files/empty'), path.join(here, 'files/1234')]
+        main(arguments)
+        # assert a few of the prints that should have been made
+        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/empty'), '0 bytes'))
+        mocked.assert_any_call('  sha256       e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/1234'), '4 bytes'))
+        mocked.assert_any_call('  sha256       9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a')
