@@ -15,6 +15,7 @@ Run `python3 setup.py install` to install both the package and commandline scrip
 It currently supports the following options (use `digestive --help` to show options after installation):
 
     usage: digestive [-h] [-m] [-1] [-2] [-5] [--hashes] [-e] [-j JOBS]
+                     [-f {auto,raw,ewf}]
                      FILE [FILE ...]
     
     run multiple digests on files
@@ -33,11 +34,13 @@ It currently supports the following options (use `digestive --help` to show opti
       -e, --entropy         calculate binary entropy
       -j JOBS, --jobs JOBS  use up to JOBS threads to process digests (defaults to
                             the number of digests)
-
+      -f {auto,raw,ewf}, --format {auto,raw,ewf}
+                            specify source format (defaults to auto)
 
 Everything accessible from the console command is available from python:
 
 - `digestive.io`: classes `Source` and `Sink`, used to read blocks of data from a source and provide a common interface to digest algorithms;
+- `digestive.ewf`: class `EWFSource` to read blocks of data from EWF filesets and the corresponding functions interfacing with [`libewf`](https://code.google.com/p/libewf/);
 - `digestive.hash`: `Sink` implementations wrapping common hash digests MD5, SHA1, SHA256 and SHA512;
 - `digestive.entropy`: `Sink` implementation to calculate the binary entropy of a source;
 - `digestive.main`: functions used by the commandline entry point to parse arguments and efficiently process data sources.
