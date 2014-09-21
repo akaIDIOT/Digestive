@@ -3,6 +3,8 @@ from ctypes import byref, cdll
 from ctypes.util import find_library
 from glob import glob
 
+from digestive.io import Source
+
 
 _ewf = find_library('ewf')
 _ewf = cdll.LoadLibrary(_ewf) if _ewf else None
@@ -123,3 +125,25 @@ def _ewf_close(handle):
     # ignore errors at this point
     _ewf.libewf_handle_close(handle, byref(ctypes.c_uint()))
     _ewf.libewf_handle_free(byref(handle), byref(ctypes.c_uint()))
+
+
+class EWFSource(Source):
+    """
+    Source implementation reading bytes from an EWF fileset, created from its primary file.
+    """
+
+    def __init__(self, source):
+        super().__init__(source)
+
+    def __len__(self):
+        return _ewf_size(self.fd)
+
+    def open(self):
+        self.fd = _ewf_open(self.source)
+
+    def readinto(self, buffer):
+        return _ewf_readinto(self.fd, buffer)
+
+    def close(self):
+        _ewf_close(self.fd)
+        self.fd = None
