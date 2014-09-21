@@ -111,7 +111,7 @@ def get_source(file, source_type='auto'):
         source_type = 'ewf' if ext.lower() in ewf_supported_formats else 'raw'
         return get_source(file, source_type=source_type)
     else:
-        raise ValueError('unknown format: {}'.format(source_type))
+        raise ValueError('unknown source type: {}'.format(source_type))
 
 
 def main(arguments=None):
@@ -123,11 +123,13 @@ def main(arguments=None):
     arguments = parse_arguments(arguments)
 
     with ThreadPoolExecutor(arguments.jobs) as executor:
+        # TODO: globs like tests/files/file.* includes both file.E01 and file.E02
+        # TODO: only file.E01 will get treated as ewf, file.E02 should be removed from sources
         for file in arguments.sources:
             with get_source(file, arguments.format) as source:
                 # instantiate sinks from requested types
                 sinks = [sink() for sink in arguments.sinks]
-                print('{} ({})'.format(file, file_size(len(source))))
+                print('{} ({})'.format(source, file_size(len(source))))
 
                 process_source(executor, source, sinks)
 

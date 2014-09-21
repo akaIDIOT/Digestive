@@ -10,6 +10,9 @@ class Source:
         self.source = source
         self.fd = None
 
+    def __str__(self):
+        return self.source
+
     def __len__(self):
         return path.getsize(self.source)
 

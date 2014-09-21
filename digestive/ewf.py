@@ -22,6 +22,14 @@ def format_supported(basename):
     return ext.lower() in supported_exts
 
 
+def list_ewf_files(name):
+    basename, ext = path.splitext(name)
+    if ext.lower() in supported_exts:
+        return glob(name[:-2] + '??')
+    else:
+        return [name]
+
+
 def _ewf_error(error):
     """
     Returns an error message associated with error as returned by libewf calls.
@@ -69,7 +77,7 @@ def _ewf_open(names):
     if isinstance(names, str):
         # glob a basename like file.E01 into a list like [file.E01, file.E02, file.E03, ...]
         # all supported filesets use .<prefix><two digits>
-        names = [bytes(name, 'utf-8') for name in glob(names[:-2] + '??')]
+        names = [bytes(name, 'utf-8') for name in list_ewf_files(names)]
 
     names_arg = (ctypes.c_char_p * len(names))()
     names_arg[:] = names
@@ -145,6 +153,17 @@ class EWFSource(Source):
 
     def __init__(self, source):
         super().__init__(source)
+
+    def __str__(self):
+        names = list_ewf_files(self.source)
+        if len(names) == 1:
+            return self.source
+        else:
+            last, *_ = sorted(names, reverse=True)
+            _, last = path.splitext(last)
+
+            # last includes a dot, format like 'file.E01..E04'
+            return '{}.{}'.format(self.source, last)
 
     def __len__(self):
         return _ewf_size(self.fd)
