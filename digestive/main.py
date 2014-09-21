@@ -1,8 +1,10 @@
 from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor, wait
 from math import log
+from os import path
 
 from digestive.entropy import Entropy
+from digestive.ewf import EWFSource, supported_exts as ewf_supported_formats
 from digestive.hash import MD5, SHA1, SHA256, SHA512
 from digestive.io import Source
 
@@ -50,6 +52,9 @@ def parse_arguments(arguments=None):
     # misc options
     parser.add_argument('-j', '--jobs', type=int, metavar='JOBS',
                         help='use up to %(metavar)s threads to process digests (defaults to the number of digests)')
+    # TODO: specifying --format ewf on files that don't match supported exts will raise ValueError
+    parser.add_argument('-f', '--format', choices=('auto', 'raw', 'ewf'), default='auto',
+                        help='specify source format (defaults to auto)')
     # TODO: -b, --block-size (with support suffixes like M, Ki, likely all mapping to binary)
     # TODO: -t, --time
     # TODO: -p, --progress
@@ -96,6 +101,19 @@ def process_source(executor, source, sinks, block_size=1 << 20):
         wait(futures)
 
 
+def get_source(file, source_type='auto'):
+    if source_type == 'raw':
+        return Source(file)
+    elif source_type == 'ewf':
+        return EWFSource(file)
+    elif source_type == 'auto':
+        basename, ext = path.splitext(file)
+        source_type = 'ewf' if ext.lower() in ewf_supported_formats else 'raw'
+        return get_source(file, source_type=source_type)
+    else:
+        raise ValueError('unknown format: {}'.format(source_type))
+
+
 def main(arguments=None):
     """
     Runs digestive.
@@ -106,7 +124,7 @@ def main(arguments=None):
 
     with ThreadPoolExecutor(arguments.jobs) as executor:
         for file in arguments.sources:
-            with Source(file) as source:
+            with get_source(file, arguments.format) as source:
                 # instantiate sinks from requested types
                 sinks = [sink() for sink in arguments.sinks]
                 print('{} ({})'.format(file, file_size(len(source))))
