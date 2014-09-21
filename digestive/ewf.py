@@ -2,6 +2,7 @@ import ctypes
 from ctypes import byref, cdll
 from ctypes.util import find_library
 from glob import glob
+from os import path
 
 from digestive.io import Source
 
@@ -10,6 +11,15 @@ _ewf = find_library('ewf')
 _ewf = cdll.LoadLibrary(_ewf) if _ewf else None
 if not _ewf:
     raise ImportError('libewf')
+
+
+# unsure how useful l01 / lx01 are, but libewf supports them
+supported_exts = ('.s01', '.e01', '.ex01', '.l01', '.lx01')
+
+
+def format_supported(basename):
+    basename, ext = path.splitext(basename)
+    return ext.lower() in supported_exts
 
 
 def _ewf_error(error):
@@ -53,11 +63,12 @@ def _ewf_open(names):
                   [file.E01, file.E01, file.E03].
     :return: A value usable as the handle argument to libewf calls.
     """
-    if isinstance(names, str) and not names.lower().endswith('e01'):  # TODO: libewf likely supports more than just E01
+    if isinstance(names, str) and not format_supported(names):
         raise ValueError('invalid basename for EWF file: {}'.format(names))
 
     if isinstance(names, str):
         # glob a basename like file.E01 into a list like [file.E01, file.E02, file.E03, ...]
+        # all supported filesets use .<prefix><two digits>
         names = [bytes(name, 'utf-8') for name in glob(names[:-2] + '??')]
 
     names_arg = (ctypes.c_char_p * len(names))()
