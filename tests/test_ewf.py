@@ -18,8 +18,8 @@ def test_format_supported():
 
 
 def test_list_ewf_files():
-    files = [path.join(here, 'files/random.E01'), path.join(here, 'files/random.E02')]
-    assert list_ewf_files(path.join(here, 'files/random.E01')) == files
+    files = {path.join(here, 'files/random.E01'), path.join(here, 'files/random.E02')}
+    assert set(list_ewf_files(path.join(here, 'files/random.E01'))) == files
     # non-primary file is not handled as the beginning of a set
     assert list_ewf_files(path.join(here, 'files/random.E02')) == [path.join(here, 'files/random.E02')]
 
