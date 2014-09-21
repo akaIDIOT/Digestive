@@ -4,6 +4,8 @@ from setuptools import find_packages, setup
 import digestive
 
 
+requires = ['decorator']
+
 setup(
     name='digestive',
     version=digestive.__version__,
@@ -22,8 +24,8 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    install_requires=['decorator'],
-    tests_require=['pytest', 'mock'],
+    install_requires=requires,
+    tests_require=requires + ['pytest', 'mock', 'decorator'],
     entry_points={
         'console_scripts': {
             'digestive = digestive.main:main'
