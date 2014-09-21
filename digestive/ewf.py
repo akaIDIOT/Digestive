@@ -4,13 +4,27 @@ from ctypes.util import find_library
 from glob import glob
 from os import path
 
+from decorator import decorator
+
 from digestive.io import Source
 
 
 _ewf = find_library('ewf')
 _ewf = cdll.LoadLibrary(_ewf) if _ewf else None
-if not _ewf:
-    raise ImportError('libewf')
+
+
+@decorator
+def requires_libewf(func, *args, **kwargs):
+    """
+    Convenience decorator to indicate that a function requires libewf.
+
+    :param func: The function that requires libewf.
+    :return: A wrapped function raising ImportError when libewf is not available or calling func when it is.
+    """
+
+    if not _ewf:
+        raise ImportError('libewf')
+    return func(*args, **kwargs)
 
 
 # unsure how useful l01 / lx01 are, but libewf supports them
@@ -30,6 +44,7 @@ def list_ewf_files(name):
         return [name]
 
 
+@requires_libewf
 def _ewf_error(error):
     """
     Returns an error message associated with error as returned by libewf calls.
@@ -47,6 +62,7 @@ def _ewf_error(error):
     return str(message, 'utf-8')
 
 
+@requires_libewf
 def _ewf_init_handle():
     """
     Initializes a libewf handle.
@@ -63,6 +79,7 @@ def _ewf_init_handle():
     return handle
 
 
+@requires_libewf
 def _ewf_open(names):
     """
     Opens an EWF file or fileset.
@@ -95,6 +112,7 @@ def _ewf_open(names):
     return handle
 
 
+@requires_libewf
 def _ewf_size(handle):
     """
     Gets the size of the original source of the EWF fileset represented by handle.
@@ -112,6 +130,7 @@ def _ewf_size(handle):
     return size.value
 
 
+@requires_libewf
 def _ewf_readinto(handle, buffer):
     """
     Reads data from the current position of handle into the provided buffer.
@@ -135,6 +154,7 @@ def _ewf_readinto(handle, buffer):
     return num_read
 
 
+@requires_libewf
 def _ewf_close(handle):
     """
     Closes handle and frees it.

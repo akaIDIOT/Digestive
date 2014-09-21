@@ -22,6 +22,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
+    install_requires=['decorator'],
     tests_require=['pytest', 'mock'],
     entry_points={
         'console_scripts': {
