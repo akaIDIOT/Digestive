@@ -135,3 +135,7 @@ def main(arguments=None):
 
                 for sink in sinks:
                     print('  {:<12} {}'.format(sink.name, sink.digest()))
+
+
+if __name__ == '__main__':
+    main()
