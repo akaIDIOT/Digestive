@@ -9,6 +9,7 @@ from decorator import decorator
 from digestive.io import Source
 
 
+# TODO: bad things happen when the import below works but points to libewf1; find a way to detect this properly
 _ewf = find_library('ewf')
 _ewf = cdll.LoadLibrary(_ewf) if _ewf else None
 

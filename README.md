@@ -37,6 +37,10 @@ It currently supports the following options (use `digestive --help` to show opti
       -f {auto,raw,ewf}, --format {auto,raw,ewf}
                             specify source format (defaults to auto)
 
+**Note:** EWF-support requires version 2 of [`libewf`](https://code.google.com/p/libewf/).
+Ubuntu or Debian-based systems will likely find this package named `libewf2`, `libewf1` won't work.
+Other distributions might not make this distinctions; look for for `libewf.so.2`.
+
 Everything accessible from the console command is available from python:
 
 - `digestive.io`: classes `Source` and `Sink`, used to read blocks of data from a source and provide a common interface to digest algorithms;
