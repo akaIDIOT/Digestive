@@ -10,7 +10,6 @@ from digestive.hash import MD5, SHA1, SHA256, SHA512
 from digestive.io import Source
 
 
-
 # binary suffixes for byte sizes
 _sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB']
 # the corresponding suffixes
