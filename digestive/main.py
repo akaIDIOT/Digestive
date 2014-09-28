@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor, wait
 from math import log
 from os import path
+import re
 
 from digestive.entropy import Entropy
 from digestive.ewf import EWFSource, supported_exts as ewf_supported_formats
@@ -9,12 +10,18 @@ from digestive.hash import MD5, SHA1, SHA256, SHA512
 from digestive.io import Source
 
 
+
+# binary suffixes for byte sizes
 _sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB']
+# the corresponding suffixes
+_suffixes = [size[0].lower() for size in _sizes]
+# multipliers for byte size arguments taken from _suffixes
+_multipliers = {suffix: 1 << (i * 10) for i, suffix in enumerate(_suffixes)}
 
 
 def file_size(size):
     """
-    Converts a byte size into a human-readable format using binary prefixes.
+    Converts a byte size into a human-readable format using binary suffixes.
 
     :param size: The value to be formatted.
     :return: A human-readable file size.
@@ -24,6 +31,22 @@ def file_size(size):
         # exceeding ludicrous file sizes, default to bytes
         return '{} bytes'.format(size)
     return '{:.4g} {}'.format(size / (1 << (order * 10)), _sizes[order])
+
+
+def num_bytes(size):
+    """
+    Converts a human-readable byte size into an int, stripping an optional binary suffix.
+
+    :param size: The size to be parsed.
+    :return: An int.
+    """
+    match = re.match(r'(?P<size>\d+)(?P<suffix>[{}])?$'.format(''.join(_suffixes)), size, re.IGNORECASE)
+    if match:
+        # one optional group, no suffix is 'b' for bytes
+        size, suffix = match.groups('b')
+        return int(size) * _multipliers.get(suffix.lower())
+    else:
+        raise TypeError(size)
 
 
 def parse_arguments(arguments=None):
@@ -52,10 +75,11 @@ def parse_arguments(arguments=None):
     # misc options
     parser.add_argument('-j', '--jobs', type=int, metavar='JOBS',
                         help='use up to %(metavar)s threads to process digests (defaults to the number of digests)')
+    parser.add_argument('-b', '--block-size', type=num_bytes, metavar='BYTES', default='1M',
+                        help='read data in chunks of %(metavar)s at a time (defaults to 1M)')
     # TODO: specifying --format ewf on files that don't match supported exts will raise ValueError
     parser.add_argument('-f', '--format', choices=('auto', 'raw', 'ewf'), default='auto',
                         help='specify source format (defaults to auto)')
-    # TODO: -b, --block-size (with support suffixes like M, Ki, likely all mapping to binary)
     # TODO: -t, --time
     # TODO: -p, --progress
     # TODO: refuse --progress when outputting to a dumb terminal
@@ -131,7 +155,7 @@ def main(arguments=None):
                 sinks = [sink() for sink in arguments.sinks]
                 print('{} ({})'.format(source, file_size(len(source))))
 
-                process_source(executor, source, sinks)
+                process_source(executor, source, sinks, arguments.block_size)
 
                 for sink in sinks:
                     print('  {:<12} {}'.format(sink.name, sink.digest()))

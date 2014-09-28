@@ -34,6 +34,9 @@ It currently supports the following options (use `digestive --help` to show opti
       -e, --entropy         calculate binary entropy
       -j JOBS, --jobs JOBS  use up to JOBS threads to process digests (defaults to
                             the number of digests)
+      -b BYTES, --block-size BYTES
+                            read data in chunks of BYTES at a time (defaults to
+                            1M)
       -f {auto,raw,ewf}, --format {auto,raw,ewf}
                             specify source format (defaults to auto)
 
