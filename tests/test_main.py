@@ -2,11 +2,12 @@ from argparse import Namespace
 from concurrent.futures import ThreadPoolExecutor
 from mock import Mock, patch
 from os import path
+import pytest
 
 from digestive.entropy import Entropy
 from digestive.hash import MD5, SHA1, SHA256, SHA512
 from digestive.io import Source
-from digestive.main import file_size, main, parse_arguments, process_arguments, process_source
+from digestive.main import file_size, main, num_bytes, parse_arguments, process_arguments, process_source
 
 
 here = path.dirname(path.abspath(__file__))
@@ -27,6 +28,17 @@ def test_file_size():
     assert 'EiB' in file_size(4 << 60)
     assert 'ZiB' in file_size(4 << 70)
     assert 'bytes' in file_size(4 << 80)
+
+
+def test_num_bytes():
+    assert num_bytes('123') == 123
+    assert num_bytes('123b') == 123
+    assert num_bytes('123M') == 123 << 20
+    assert num_bytes('123m') == 123 << 20
+
+    with pytest.raises(TypeError):
+        # 123 ludicribytes is not a thing...
+        num_bytes('123l')
 
 
 def test_process_arguments():
@@ -60,6 +72,7 @@ def test_parse_arguments():
     assert 'source1' in arguments.sources
     assert 'source2' in arguments.sources
     assert arguments.jobs == 4
+    assert arguments.block_size == 1 << 20
 
     arguments = ['--entropy', '-j', '8', 'source']
     arguments = parse_arguments(arguments)
@@ -67,6 +80,12 @@ def test_parse_arguments():
     assert Entropy in arguments.sinks
     assert arguments.jobs == 8
     assert 'source' in arguments.sources
+
+    arguments = ['-e', '--block-size', '4M', 'source']
+    arguments = parse_arguments(arguments)
+
+    assert Entropy in arguments.sinks
+    assert arguments.block_size == 4 << 20
 
 
 def test_process_source():
