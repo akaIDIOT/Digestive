@@ -115,7 +115,7 @@ def test_main():
         arguments = ['--hashes', path.join(here, 'files/empty'), path.join(here, 'files/1234')]
         main(arguments)
         # assert a few of the prints that should have been made
-        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/empty'), '0 bytes'))
+        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/empty'), '0 bytes'), flush=True)
         mocked.assert_any_call('  sha256       e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
-        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/1234'), '4 bytes'))
+        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/1234'), '4 bytes'), flush=True)
         mocked.assert_any_call('  sha256       9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a')

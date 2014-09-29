@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, wait
 from math import log
 from os import path
 import re
+import sys
 
 from digestive.entropy import Entropy
 from digestive.ewf import EWFSource, supported_exts as ewf_supported_formats
@@ -18,18 +19,19 @@ _suffixes = [size[0].lower() for size in _sizes]
 _multipliers = {suffix: 1 << (i * 10) for i, suffix in enumerate(_suffixes)}
 
 
-def file_size(size):
+def file_size(size, template='{value:.4g} {unit}'):
     """
     Converts a byte size into a human-readable format using binary suffixes.
 
     :param size: The value to be formatted.
+    :param template: A format string with two parameters: value and unit.
     :return: A human-readable file size.
     """
     order = int(log(size, 2) // 10) if size else 0
     if order >= len(_sizes):
         # exceeding ludicrous file sizes, default to bytes
         return '{} bytes'.format(size)
-    return '{:.4g} {}'.format(size / (1 << (order * 10)), _sizes[order])
+    return template.format(value=size / (1 << (order * 10)), unit=_sizes[order])
 
 
 def num_bytes(size):
@@ -79,9 +81,9 @@ def parse_arguments(arguments=None):
     # TODO: specifying --format ewf on files that don't match supported exts will raise ValueError
     parser.add_argument('-f', '--format', choices=('auto', 'raw', 'ewf'), default='auto',
                         help='specify source format (defaults to auto)')
+    parser.add_argument('-P', '--no-progress', action='store_const', dest='progress', default=True, const=False,
+                        help='disable progress output (always disabled for piped output)')
     # TODO: -t, --time
-    # TODO: -p, --progress
-    # TODO: refuse --progress when outputting to a dumb terminal
     # TODO: -r, --recursive
     # positional arguments: sources
     parser.add_argument('sources', metavar='FILE', nargs='+',
@@ -107,7 +109,7 @@ def process_arguments(arguments, parser):
     arguments.jobs = arguments.jobs if arguments.jobs else len(arguments.sinks)
 
 
-def process_source(executor, source, sinks, block_size=1 << 20):
+def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
     """
     Processes a data source, feeding chunks of at most block_size to each sink in parallel.
 
@@ -115,10 +117,13 @@ def process_source(executor, source, sinks, block_size=1 << 20):
     :param source: The data source to read from.
     :param sinks: The sink instances to process data chunks with.
     :param block_size: The maximum chunk size to read.
+    :param progress: An object to call add(int) on for every read block.
     """
     generator = source.blocks(block_size)
     block = next(generator, False)
     while block:
+        if progress:
+            progress.add(len(block))
         futures = [executor.submit(sink.update, block) for sink in sinks]
         block = next(generator, False)
         wait(futures)
@@ -143,6 +148,29 @@ def main(arguments=None):
 
     :param arguments: Commandline arguments, passed to parse_arguments.
     """
+
+    class Progress:
+        """
+        FIXME: I'm a bit of a hack...
+        """
+        def __init__(self, end):
+            self.value = 0
+            self.end = end
+
+        def add(self, amount):
+            self.value += amount
+            if self.end:
+                # progress only makes sense if end > 0
+                self.print_progress()
+
+        def print_progress(self):
+            # TODO: line not properly cleared if Entropy is first sink (result not wide enough)
+            print('\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
+                percent=(self.value / self.end),
+                bar=('»' * int((20 * self.value / self.end))),  # TODO: will » work everywhere?
+                value=file_size(self.value, '{value:>8.3f} {unit}')
+            ), end='')
+
     arguments = parse_arguments(arguments)
 
     with ThreadPoolExecutor(arguments.jobs) as executor:
@@ -152,9 +180,17 @@ def main(arguments=None):
             with get_source(file, arguments.format) as source:
                 # instantiate sinks from requested types
                 sinks = [sink() for sink in arguments.sinks]
-                print('{} ({})'.format(source, file_size(len(source))))
+                # flush initial status line to force it to show in something like | less
+                print('{} ({})'.format(source, file_size(len(source))), flush=True)
 
-                process_source(executor, source, sinks, arguments.block_size)
+                if arguments.progress and sys.stdout.isatty():
+                    # stdout should support carriage returns, engage progress information!
+                    process_source(executor, source, sinks, arguments.block_size, progress=Progress(end=len(source)))
+                    # print next (result) line over progress information
+                    print('\r', end='')
+                else:
+                    # omit progress altogether
+                    process_source(executor, source, sinks, arguments.block_size)
 
                 for sink in sinks:
                     print('  {:<12} {}'.format(sink.name, sink.digest()))
