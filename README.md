@@ -15,7 +15,7 @@ Run `python3 setup.py install` to install both the package and commandline scrip
 It currently supports the following options (use `digestive --help` to show options after installation):
 
     usage: main.py [-h] [-m] [-1] [-2] [-5] [--hashes] [-e] [-j JOBS] [-b BYTES]
-                   [-f {auto,raw,ewf}] [-P]
+                   [-f {auto,raw,ewf}] [-p {bytes}] [-P]
                    FILE [FILE ...]
     
     run multiple digests on files
@@ -39,6 +39,8 @@ It currently supports the following options (use `digestive --help` to show opti
                             1M)
       -f {auto,raw,ewf}, --format {auto,raw,ewf}
                             specify source format (defaults to auto)
+      -p {bytes}, --progress {bytes}
+                            show progress information (defaults to bytes)
       -P, --no-progress     disable progress output (always disabled for piped
                             output)
 

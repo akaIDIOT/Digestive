@@ -81,7 +81,10 @@ def parse_arguments(arguments=None):
     # TODO: specifying --format ewf on files that don't match supported exts will raise ValueError
     parser.add_argument('-f', '--format', choices=('auto', 'raw', 'ewf'), default='auto',
                         help='specify source format (defaults to auto)')
-    parser.add_argument('-P', '--no-progress', action='store_const', dest='progress', default=True, const=False,
+    # TODO: add choice (and implement) throughput / speed, eta
+    parser.add_argument('-p', '--progress', choices=('bytes',), default='bytes',
+                        help='show progress information (defaults to bytes)')
+    parser.add_argument('-P', '--no-progress', action='store_false', dest='progress',
                         help='disable progress output (always disabled for piped output)')
     # TODO: -t, --time
     # TODO: -r, --recursive
@@ -148,11 +151,11 @@ def main(arguments=None):
 
     :param arguments: Commandline arguments, passed to parse_arguments.
     """
-
     class Progress:
         """
         FIXME: I'm a bit of a hack...
         """
+
         def __init__(self, end):
             self.value = 0
             self.end = end
