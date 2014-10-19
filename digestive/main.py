@@ -164,15 +164,15 @@ def main(arguments=None):
             self.value += amount
             if self.end:
                 # progress only makes sense if end > 0
-                self.print_progress()
+                print_progress(self.value, self.end)
 
-        def print_progress(self):
-            # TODO: line not properly cleared if Entropy is first sink (result not wide enough)
-            print('\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
-                percent=(self.value / self.end),
-                bar=('»' * int((20 * self.value / self.end))),  # TODO: will » work everywhere?
-                value=file_size(self.value, '{value:>8.3f} {unit}')
-            ), end='')
+    def print_progress(current, end):
+        # TODO: line not properly cleared if Entropy is first sink (result not wide enough)
+        print('\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
+            percent=(current / end),
+            bar=('»' * int((20 * current / end))),  # TODO: will » work everywhere?
+            value=file_size(current, '{value:>8.3f} {unit}')
+        ), end='')
 
     arguments = parse_arguments(arguments)
 
