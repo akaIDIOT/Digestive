@@ -125,8 +125,8 @@ def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
     generator = source.blocks(block_size)
     block = next(generator, False)
     while block:
-        if progress:
-            progress.add(len(block))
+        if callable(progress):
+            progress(len(block))
         futures = [executor.submit(sink.update, block) for sink in sinks]
         block = next(generator, False)
         wait(futures)
@@ -160,7 +160,7 @@ def main(arguments=None):
             self.value = 0
             self.end = end
 
-        def add(self, amount):
+        def __call__(self, amount):
             self.value += amount
             if self.end:
                 # progress only makes sense if end > 0
