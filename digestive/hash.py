@@ -8,7 +8,7 @@ class HashDigest(Sink):
         super().__init__(name)
         self._digest = digest
 
-    def update(self, data):
+    def process(self, data):
         self._digest.update(data)
 
     def digest(self):

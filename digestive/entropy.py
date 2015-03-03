@@ -10,7 +10,7 @@ class Entropy(Sink):
         self.length = 0
         self.counter = Counter()
 
-    def update(self, data):
+    def process(self, data):
         self.length += len(data)
         self.counter.update(data)
 

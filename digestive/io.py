@@ -65,9 +65,9 @@ class Sink:
     def __init__(self, name=None):
         self.name = name
 
-    def update(self, data):
+    def process(self, data):
         """
-        Updates this digest with a chunk of data.
+        Processes a chunk of data.
 
         :param data: Chunk of data.
         """
@@ -75,8 +75,8 @@ class Sink:
 
     def digest(self):
         """
-        Creates the result of this digest and returns it.
+        Creates the result of this sink and returns it.
 
-        :return: The result of this digest as a string.
+        :return: The result of this sink as a string.
         """
         pass

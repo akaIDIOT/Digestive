@@ -127,7 +127,7 @@ def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
     while block:
         if callable(progress):
             progress(len(block))
-        futures = [executor.submit(sink.update, block) for sink in sinks]
+        futures = [executor.submit(sink.process, block) for sink in sinks]
         block = next(generator, False)
         wait(futures)
 

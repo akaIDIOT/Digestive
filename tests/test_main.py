@@ -101,13 +101,13 @@ def test_process_source():
         with source:
             process_source(executor, source, [sink])
 
-        sink.update.assert_called_once_with(b'\x01\x02\x03\x04')
+        sink.process.assert_called_once_with(b'\x01\x02\x03\x04')
 
         sink.reset_mock()
         with source:
             process_source(executor, source, [sink], block_size=1)
 
-        assert sink.update.call_count == 4
+        assert sink.process.call_count == 4
 
 
 def test_main():

@@ -14,7 +14,7 @@ def test_empty():
         source.readinto(buffer)
 
         for sink in sinks:
-            sink.update(buffer)
+            sink.process(buffer)
 
     hashes = [
         # md5sum files/empty
@@ -37,7 +37,7 @@ def test_1234():
         buffer = bytearray(4)
         source.readinto(buffer)
         for sink in sinks:
-            sink.update(buffer)
+            sink.process(buffer)
 
     hashes = [
         # md5sum files/1234
@@ -75,7 +75,7 @@ def test_zeroes():
     with FourBlocksSource() as source:
         for block in source.blocks(4096):
             for sink in sinks:
-                sink.update(block)
+                sink.process(block)
 
     hashes = [
         # md5sum <( dd if=/dev/zero bs=4096 count=4 )
@@ -98,7 +98,7 @@ def test_random():
         buffer = bytearray(1 << 20)
         source.readinto(buffer)
         for sink in sinks:
-            sink.update(buffer)
+            sink.process(buffer)
 
     hashes = [
         # md5sum files/random.dd
