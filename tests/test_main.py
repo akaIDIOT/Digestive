@@ -1,7 +1,8 @@
 from argparse import Namespace
 from concurrent.futures import ThreadPoolExecutor
-from mock import Mock, patch
 from os import path
+
+from mock import Mock, patch
 import pytest
 
 from digestive.entropy import Entropy
@@ -73,6 +74,7 @@ def test_parse_arguments():
     assert 'source2' in arguments.sources
     assert arguments.jobs == 4
     assert arguments.block_size == 1 << 20
+    assert not arguments.recursive
 
     arguments = ['--entropy', '-j', '8', 'source']
     arguments = parse_arguments(arguments)
@@ -81,11 +83,12 @@ def test_parse_arguments():
     assert arguments.jobs == 8
     assert 'source' in arguments.sources
 
-    arguments = ['-e', '--block-size', '4M', 'source']
+    arguments = ['-e', '--block-size', '4M', '-r', 'source']
     arguments = parse_arguments(arguments)
 
     assert Entropy in arguments.sinks
     assert arguments.block_size == 4 << 20
+    assert arguments.recursive
 
 
 def test_process_source():
@@ -119,3 +122,15 @@ def test_main():
         mocked.assert_any_call('  sha256       e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
         mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/1234'), '4 bytes'), flush=True)
         mocked.assert_any_call('  sha256       9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a')
+
+        mocked.reset_mock()
+
+        arguments = ['--hashes', '--recursive', path.join(here, 'files')]
+        main(arguments)
+        # assert recursing into files and processing the test files
+        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/empty'), '0 bytes'), flush=True)
+        mocked.assert_any_call('  sha256       e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/1234'), '4 bytes'), flush=True)
+        mocked.assert_any_call('  sha256       9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a')
+        mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/random.dd'), '1 MiB'), flush=True)
+        mocked.assert_any_call('  sha256       810ec5f2086379f0e8000456dbf2aede8538fbc9d9898835f114c8771ed834b5')
