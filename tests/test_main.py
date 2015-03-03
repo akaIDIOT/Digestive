@@ -6,7 +6,7 @@ from mock import Mock, patch
 import pytest
 
 from digestive.entropy import Entropy
-from digestive.hash import MD5, SHA1, SHA256, SHA512
+from digestive.hash import MD5, SHA1, SHA256, SHA512, sha3_enabled, SHA3256, SHA3512
 from digestive.io import Source
 from digestive.main import file_size, main, num_bytes, parse_arguments, process_arguments, process_source
 
@@ -89,6 +89,17 @@ def test_parse_arguments():
     assert Entropy in arguments.sinks
     assert arguments.block_size == 4 << 20
     assert arguments.recursive
+
+    if sha3_enabled:
+        arguments = ['--hashes', 'source']
+        arguments = parse_arguments(arguments)
+
+        assert SHA3256 in arguments.sinks
+
+        arguments = ['--sha3-512', 'source']
+        arguments = parse_arguments(arguments)
+
+        assert SHA3512 in arguments.sinks
 
 
 def test_process_source():

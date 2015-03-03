@@ -24,6 +24,9 @@ setup(
     ],
     install_requires=['decorator'],
     tests_require=['pytest', 'mock'],
+    extras_require={
+        'sha3': 'pysha3',
+    },
     entry_points={
         'console_scripts': {
             'digestive = digestive.main:main'
