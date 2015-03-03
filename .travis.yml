@@ -8,12 +8,16 @@ install:
   - pip install flake8
   - pip install pep8-naming
   - pip install coveralls
+  - pip install wheel
   - pip install decorator
   - pip install pysha3
 
 script:
   - flake8 --max-line-length=120 digestive
   - coverage run --branch --source digestive -m py.test
+  - python setup.py bdist_wheel
+  - pip install dist/digestive*.whl
+  - digestive --hashes --format raw -r test/files
 
 after_success:
   - coveralls
