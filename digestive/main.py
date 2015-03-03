@@ -167,7 +167,6 @@ def main(arguments=None):
                 print_progress(self.value, self.end)
 
     def print_progress(current, end):
-        # TODO: line not properly cleared if Entropy is first sink (result not wide enough)
         print('\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
             percent=(current / end),
             bar=('»' * int((20 * current / end))),  # TODO: will » work everywhere?
@@ -189,8 +188,8 @@ def main(arguments=None):
                 if arguments.progress and sys.stdout.isatty():
                     # stdout should support carriage returns, engage progress information!
                     process_source(executor, source, sinks, arguments.block_size, progress=Progress(end=len(source)))
-                    # print next (result) line over progress information
-                    print('\r', end='')
+                    # use terminal escape to clear line and \r return cursor to start of line
+                    print('\033[2K\r', end='')
                 else:
                     # omit progress altogether
                     process_source(executor, source, sinks, arguments.block_size)
