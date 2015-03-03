@@ -125,7 +125,8 @@ def test_main():
 
         mocked.reset_mock()
 
-        arguments = ['--hashes', '--recursive', path.join(here, 'files')]
+        # force raw format to treat random.E01 as a regular file (courtesy of Travis…)
+        arguments = ['--hashes', '-f', 'raw', '--recursive', path.join(here, 'files')]
         main(arguments)
         # assert recursing into files and processing the test files
         mocked.assert_any_call('{} ({})'.format(path.join(here, 'files/empty'), '0 bytes'), flush=True)
