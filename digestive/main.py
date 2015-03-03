@@ -195,7 +195,7 @@ def main(arguments=None):
                     process_source(executor, source, sinks, arguments.block_size)
 
                 for sink in sinks:
-                    print('  {:<12} {}'.format(sink.name, sink.digest()))
+                    print('  {:<12} {}'.format(sink.name, sink.result()))
 
 
 if __name__ == '__main__':

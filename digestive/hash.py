@@ -11,7 +11,7 @@ class HashDigest(Sink):
     def process(self, data):
         self._digest.update(data)
 
-    def digest(self):
+    def result(self):
         return self._digest.hexdigest()
 
 

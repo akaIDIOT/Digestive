@@ -16,7 +16,7 @@ def test_empty():
         sink.process(buffer)
 
     # empty file has 0.0 entropy
-    assert float(sink.digest()) == 0.0
+    assert float(sink.result()) == 0.0
 
 
 def test_range():
@@ -25,4 +25,4 @@ def test_range():
     sink.process(bytearray(range(0, 256)))
 
     # full range of byte values should be 8.0
-    assert float(sink.digest()) == 8.0
+    assert float(sink.result()) == 8.0

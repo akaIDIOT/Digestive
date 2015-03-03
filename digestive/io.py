@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from os import path
 
 
@@ -65,6 +66,7 @@ class Sink:
     def __init__(self, name=None):
         self.name = name
 
+    @abstractmethod
     def process(self, data):
         """
         Processes a chunk of data.
@@ -73,7 +75,8 @@ class Sink:
         """
         pass
 
-    def digest(self):
+    @abstractmethod
+    def result(self):
         """
         Creates the result of this sink and returns it.
 

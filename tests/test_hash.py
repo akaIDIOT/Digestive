@@ -27,7 +27,7 @@ def test_empty():
         'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce'
         '47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e',
     ]
-    for (result, expected) in zip((sink.digest() for sink in sinks), hashes):
+    for (result, expected) in zip((sink.result() for sink in sinks), hashes):
         assert result == expected
 
 
@@ -50,7 +50,7 @@ def test_1234():
         'a7c976db1723adb41274178dc82e9b777941ab201c69de61d0f2bc6d27a3598f'
         '594fa748e50d88d3c2bf1e2c2e72c3cfef78c3c6d4afa90391f7e33ababca48e',
     ]
-    for (result, expected) in zip((sink.digest() for sink in sinks), hashes):
+    for (result, expected) in zip((sink.result() for sink in sinks), hashes):
         assert result == expected
 
 
@@ -88,7 +88,7 @@ def test_zeroes():
         '6eb7f16cf7afcabe9bdea88bdab0469a7937eb715ada9dfd8f428d9d38d86133'
         '945f5f2f2688ddd96062223a39b5d47f07afc3c48d9db1d5ee3f41c8d274dccf',
     ]
-    for (result, expected) in zip((sink.digest() for sink in sinks), hashes):
+    for (result, expected) in zip((sink.result() for sink in sinks), hashes):
         assert result == expected
 
 
@@ -111,5 +111,5 @@ def test_random():
         '24dbb6cb56757a621fb8e6a8c8733f1cfc3c77bd23ac325e672eaaf856eac602'
         '307541ac434f598afb62448e90b3608344cfeb2e64778d3f7024bc69f5bb46ef',
     ]
-    for (result, expected) in zip((sink.digest() for sink in sinks), hashes):
+    for (result, expected) in zip((sink.result() for sink in sinks), hashes):
         assert result == expected
