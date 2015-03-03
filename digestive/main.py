@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor, wait
 from math import log
-from os import path
+from os import path, walk
 import re
 import sys
 
@@ -87,7 +87,8 @@ def parse_arguments(arguments=None):
     parser.add_argument('-P', '--no-progress', action='store_false', dest='progress',
                         help='disable progress output (always disabled for piped output)')
     # TODO: -t, --time
-    # TODO: -r, --recursive
+    parser.add_argument('-r', '--recursive', action='store_true',
+                        help='process sources recursively')
     # positional arguments: sources
     parser.add_argument('sources', metavar='FILE', nargs='+',
                         help='input files')
@@ -130,6 +131,27 @@ def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
         futures = [executor.submit(sink.process, block) for sink in sinks]
         block = next(generator, False)
         wait(futures)
+
+
+def files(sources, recurse=False, followlinks=False):
+    """
+    Generates paths to files.
+
+    :param sources: The base sources passed as arguments.
+    :param recurse: Whether to recurse into directories.
+    :param followlinks: Whether to follow symbolic links.
+    :return: A generator of sources based on the provided arguments.
+    """
+    if recurse:
+        for source in sources:
+            # use walk to recurse into each source…
+            for base, _, names in walk(source, followlinks=followlinks):
+                # …and yield all the files within them
+                # TODO: some intelligence might be nice here, like removing .E02 when .E01 is found
+                yield from (path.join(base, name) for name in names)
+    else:
+        # simply use sources
+        yield from sources
 
 
 def get_source(file, source_type='auto'):
@@ -178,7 +200,7 @@ def main(arguments=None):
     with ThreadPoolExecutor(arguments.jobs) as executor:
         # TODO: globs like tests/files/file.* includes both file.E01 and file.E02
         # TODO: only file.E01 will get treated as ewf, file.E02 should be removed from sources
-        for file in arguments.sources:
+        for file in files(arguments.sources, arguments.recursive):
             with get_source(file, arguments.format) as source:
                 # instantiate sinks from requested types
                 sinks = [sink() for sink in arguments.sinks]
