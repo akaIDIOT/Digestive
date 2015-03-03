@@ -33,3 +33,20 @@ class SHA256(HashDigest):
 class SHA512(HashDigest):
     def __init__(self):
         super().__init__('sha512', hashlib.sha512())
+
+
+try:
+    import sha3
+    sha3_enabled = True
+except ImportError:
+    sha3_enabled = False
+
+
+class SHA3256(HashDigest):
+    def __init__(self):
+        super().__init__('sha3-256', hashlib.sha3_256())
+
+
+class SHA3512(HashDigest):
+    def __init__(self):
+        super().__init__('sha3-512', hashlib.sha3_512())

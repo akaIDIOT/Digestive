@@ -7,7 +7,7 @@ import sys
 
 from digestive.entropy import Entropy
 from digestive.ewf import EWFSource, supported_exts as ewf_supported_formats
-from digestive.hash import MD5, SHA1, SHA256, SHA512
+from digestive.hash import MD5, SHA1, SHA256, SHA512, sha3_enabled, SHA3256, SHA3512
 from digestive.io import Source
 
 
@@ -67,9 +67,20 @@ def parse_arguments(arguments=None):
                         help='calculate SHA-256 hash')
     parser.add_argument('-5', '--sha512', action='append_const', dest='sinks', const=SHA512,
                         help='calculate SHA-512 hash')
+    hashes = [MD5, SHA1, SHA256, SHA512]
+    hashes_help = 'calculate MD5, SHA-1, SHA-256 and SHA-512 hashes (equivalent to -m125)'
+
+    if sha3_enabled:
+        parser.add_argument('-3', '--sha3-256', action='append_const', dest='sinks', const=SHA3256,
+                            help='calculate SHA3-256 hash')
+        parser.add_argument('--sha3-512', action='append_const', dest='sinks', const=SHA3512,
+                            help='calculate SHA3-512 hash')
+        hashes.append(SHA3256)
+        hashes_help = 'calculate MD5, SHA-1, SHA-256, SHA-512 and SHA3-256 hashes (equivalent to -m1253)'
+
     # convenience switch to include all hashes
-    parser.add_argument('--hashes', action='store_const', dest='sinks', const=[MD5, SHA1, SHA256, SHA512],
-                        help='calculate MD5, SHA-1, SHA-256 and SHA-512 hashes (equivalent to -m125)')
+    parser.add_argument('--hashes', action='store_const', dest='sinks', const=hashes,
+                        help=hashes_help)
     # entropy sink
     parser.add_argument('-e', '--entropy', action='append_const', dest='sinks', const=Entropy,
                         help='calculate binary entropy')
