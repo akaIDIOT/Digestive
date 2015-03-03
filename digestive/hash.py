@@ -36,7 +36,8 @@ class SHA512(HashDigest):
 
 
 try:
-    import sha3
+    # importing sha3 will add sha3 digests to hashlib
+    import sha3  # noqa
     sha3_enabled = True
 except ImportError:
     sha3_enabled = False
