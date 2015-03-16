@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor, wait
 from math import log
 from os import path, walk
@@ -184,6 +185,7 @@ def main(arguments=None):
 
     :param arguments: Commandline arguments, passed to parse_arguments.
     """
+
     class Progress:
         """
         FIXME: I'm a bit of a hack...
@@ -227,8 +229,9 @@ def main(arguments=None):
                     # omit progress altogether
                     process_source(executor, source, sinks, arguments.block_size)
 
-                for sink in sinks:
-                    print('  {:<12} {}'.format(sink.name, sink.result()))
+                results = OrderedDict((sink.name, sink.result()) for sink in sinks)
+                for name, result in results.items():
+                    print('  {:<12} {}'.format(name, result))
 
 
 if __name__ == '__main__':
