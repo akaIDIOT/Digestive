@@ -147,7 +147,7 @@ def output_to_file(output):
     else:
         while True:
             # do nothing with any value received
-            _ = yield
+            _ = yield  # noqa: variable _ is assigned to explicitly to make clear this is a collecting yield
 
 
 def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
