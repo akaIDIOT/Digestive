@@ -1,11 +1,15 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor, wait
+from datetime import datetime, timezone
 from math import log
 from os import path, walk
 import re
 import sys
+import yaml
+from yaml.nodes import MappingNode
 
+import digestive
 from digestive.entropy import Entropy
 from digestive.ewf import EWFSource, supported_exts as ewf_supported_formats
 from digestive.hash import MD5, SHA1, SHA256, SHA512, sha3_enabled, SHA3256, SHA3512
@@ -101,6 +105,8 @@ def parse_arguments(arguments=None):
     # TODO: -t, --time
     parser.add_argument('-r', '--recursive', action='store_true',
                         help='process sources recursively')
+    parser.add_argument('-o', '--output',
+                        help='write yaml-encoded output to file')
     # positional arguments: sources
     parser.add_argument('sources', metavar='FILE', nargs='+',
                         help='input files')
@@ -123,6 +129,25 @@ def process_arguments(arguments, parser):
         parser.error('at least one sink is required')
 
     arguments.jobs = arguments.jobs if arguments.jobs else len(arguments.sinks)
+
+
+def output_to_file(output):
+    if output:
+        # create a generator within a text-io context manager for output
+        with open(output, 'w') as stream:
+            info = yield
+            # use no explicit document start for the info leader
+            yaml.dump(info, stream=stream)
+
+            while True:
+                # receive source name and sink results
+                value = yield
+                # dump value to output, creating an explicit document start
+                yaml.dump(value, stream=stream, explicit_start=True)
+    else:
+        while True:
+            # do nothing with any value received
+            _ = yield
 
 
 def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
@@ -208,7 +233,22 @@ def main(arguments=None):
             value=file_size(current, '{value:>8.3f} {unit}')
         ), end='')
 
+    # add an order-retaining representer for OrderedDict (default impl calls sorted())
+    yaml.add_representer(OrderedDict, lambda dumper, data: MappingNode(
+        'tag:yaml.org,2002:map',
+        # create a represented list of tuples, in order or data.items()
+        [(dumper.represent_data(key), dumper.represent_data(value)) for key, value in data.items()]
+    ))
+
     arguments = parse_arguments(arguments)
+    # create the output generator
+    output = output_to_file(arguments.output)
+    # initialize output (moves it to the first occurrence of yield)
+    next(output)
+    info = OrderedDict()
+    info['digestive'] = str(digestive.__version__)
+    info['start'] = datetime.now(tz=timezone.utc)
+    output.send(info)
 
     with ThreadPoolExecutor(arguments.jobs) as executor:
         # TODO: globs like tests/files/file.* includes both file.E01 and file.E02
@@ -232,6 +272,21 @@ def main(arguments=None):
                 results = OrderedDict((sink.name, sink.result()) for sink in sinks)
                 for name, result in results.items():
                     print('  {:<12} {}'.format(name, result))
+
+                # create meta data leader
+                # TODO: using kwargs here would be nice, but that destroys order :( (see PEP-468)
+                info = OrderedDict((
+                    ('source', file),
+                    ('size', len(source)),
+                    ('completed', datetime.now(tz=timezone.utc))
+                ))
+                # add results
+                info.update(results)
+                # send info to the output collector
+                output.send(info)
+
+    # close the output collector, which in turn closes the output stream
+    output.close()
 
 
 if __name__ == '__main__':
