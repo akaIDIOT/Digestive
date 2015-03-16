@@ -10,6 +10,7 @@ install:
   - pip install coveralls
   - pip install wheel
   - pip install decorator
+  - pip install PyYAML
   - pip install pysha3
 
 script:
