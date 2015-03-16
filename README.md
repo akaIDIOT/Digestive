@@ -14,8 +14,8 @@ Installation and use
 Run `python3 setup.py install` to install both the package and commandline script `digestive`.
 It currently supports the following options (use `digestive --help` to show options after installation):
 
-    usage: digestive [-h] [-m] [-1] [-2] [-5] [-3] [--sha3-512] [--hashes] [-e]
-                     [-j JOBS] [-b BYTES] [-f {auto,raw,ewf}] [-p {bytes}] [-P] [-r]
+    usage: digestive [-h] [-m] [-1] [-2] [-5] [--hashes] [-e] [-j JOBS] [-b BYTES]
+                     [-f {auto,raw,ewf}] [-p {bytes}] [-P] [-r] [-o OUTPUT]
                      FILE [FILE ...]
     
     run multiple digests on files
@@ -46,6 +46,8 @@ It currently supports the following options (use `digestive --help` to show opti
       -P, --no-progress     disable progress output (always disabled for piped
                             output)
       -r, --recursive       process sources recursively
+      -o OUTPUT, --output OUTPUT
+                            write yaml-encoded output to file
 
 **Note:** EWF-support requires version 2 of [`libewf`](https://code.google.com/p/libewf/).
 Ubuntu or Debian-based systems will likely find this package named `libewf2`, `libewf1` won't work.
