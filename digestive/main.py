@@ -132,6 +132,13 @@ def process_arguments(arguments, parser):
 
 
 def output_to_file(output):
+    """
+    Collector of dicts to be written to output file as explicit YAML
+    documents.
+
+    :param output: The file name to write to (or None).
+    :return: A collecting generator (ignoring input if output was None).
+    """
     if output:
         # create a generator within a text-io context manager for output
         with open(output, 'w') as stream:
@@ -247,7 +254,7 @@ def main(arguments=None):
     next(output)
     info = OrderedDict()
     info['digestive'] = str(digestive.__version__)
-    info['start'] = datetime.now(tz=timezone.utc)
+    info['started'] = datetime.now(tz=timezone.utc)
     output.send(info)
 
     with ThreadPoolExecutor(arguments.jobs) as executor:
