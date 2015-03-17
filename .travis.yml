@@ -18,7 +18,10 @@ script:
   - coverage run --branch --source digestive -m py.test
   - python setup.py bdist_wheel
   - pip install dist/digestive*.whl
-  - digestive --hashes --format raw -r tests/files
+  - digestive --hashes --format raw --recursive --output /tmp/digestive-test-output.yml tests/files
+  # grep has a non-zero exit status if no line was matched (expecting both strings to be present)
+  - grep random.dd /tmp/digestive-test-output.yml
+  - grep 810ec5f2086379f0e8000456dbf2aede8538fbc9d9898835f114c8771ed834b5 /tmp/digestive-test-output.yml
 
 after_success:
   - coveralls
