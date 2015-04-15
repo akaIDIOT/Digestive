@@ -142,10 +142,6 @@ def output_to_file(output):
     if output:
         # create a generator within a text-io context manager for output
         with open(output, 'w') as stream:
-            info = yield
-            # use no explicit document start for the info leader
-            yaml.dump(info, stream=stream)
-
             while True:
                 # receive source name and sink results
                 value = yield
