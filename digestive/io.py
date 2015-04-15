@@ -63,7 +63,7 @@ class Sink:
     Base class for digesting data in chunks.
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, **kwargs):
         self.name = name
 
     @abstractmethod

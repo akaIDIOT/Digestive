@@ -5,8 +5,8 @@ from digestive.io import Sink
 
 
 class Entropy(Sink):
-    def __init__(self):
-        super().__init__('entropy')
+    def __init__(self, **kwargs):
+        super().__init__('entropy', **kwargs)
         self.length = 0
         self.counter = Counter()
 
