@@ -13,7 +13,7 @@ import digestive
 from digestive.entropy import Entropy
 from digestive.ewf import EWFSource, supported_exts as ewf_supported_formats
 from digestive.hash import MD5, SHA1, SHA256, SHA512, sha3_enabled, SHA3256, SHA3512
-from digestive.io import Source
+from digestive.io import Sink, Source
 
 
 # binary suffixes for byte sizes
@@ -153,7 +153,7 @@ def output_to_file(output):
             _ = yield  # noqa: variable _ is assigned to explicitly to make clear this is a collecting yield
 
 
-def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
+def process_source(executor, source, sinks, block_size=1 << 20):
     """
     Processes a data source, feeding chunks of at most block_size to each sink in parallel.
 
@@ -161,13 +161,10 @@ def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
     :param source: The data source to read from.
     :param sinks: The sink instances to process data chunks with.
     :param block_size: The maximum chunk size to read.
-    :param progress: An object to call add(int) on for every read block.
     """
     generator = source.blocks(block_size)
     block = next(generator, False)
     while block:
-        if callable(progress):
-            progress(len(block))
         futures = [executor.submit(sink.process, block) for sink in sinks]
         block = next(generator, False)
         wait(futures)
@@ -207,34 +204,38 @@ def get_source(file, source_type='auto'):
         raise ValueError('unknown source type: {}'.format(source_type))
 
 
+class Progress(Sink):
+    def __init__(self, source, **kwargs):
+        super().__init__('progress', **kwargs)
+        self.value = 0
+        self.end = len(source)
+
+    def process(self, data):
+        self.value += len(data)
+        if self.end:
+            # progress only makes sense if end > 0
+            self.print_progress()
+
+    def print_progress(self):
+        # use terminal escape to clear line and \r return cursor to start of line, followed by actual progress info
+        print('\033[2K\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
+            percent=(self.value / self.end),
+            bar=('»' * int((20 * self.value / self.end))),
+            value=file_size(self.value, '{value:>8.3f} {unit}')
+        ), end='')
+
+    def result(self):
+        print('\033[2K\r', end='')
+        # signal to not use this Sink's result
+        return None
+
+
 def main(arguments=None):
     """
     Runs digestive.
 
     :param arguments: Commandline arguments, passed to parse_arguments.
     """
-
-    class Progress:
-        """
-        FIXME: I'm a bit of a hack...
-        """
-
-        def __init__(self, end):
-            self.value = 0
-            self.end = end
-
-        def __call__(self, amount):
-            self.value += amount
-            if self.end:
-                # progress only makes sense if end > 0
-                print_progress(self.value, self.end)
-
-    def print_progress(current, end):
-        print('\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
-            percent=(current / end),
-            bar=('»' * int((20 * current / end))),  # TODO: will » work everywhere?
-            value=file_size(current, '{value:>8.3f} {unit}')
-        ), end='')
 
     # add an order-retaining representer for OrderedDict (default impl calls sorted())
     yaml.add_representer(OrderedDict, lambda dumper, data: MappingNode(
@@ -265,16 +266,14 @@ def main(arguments=None):
 
                 if arguments.progress and sys.stdout.isatty():
                     # stdout should support carriage returns, engage progress information!
-                    process_source(executor, source, sinks, arguments.block_size, progress=Progress(end=len(source)))
-                    # use terminal escape to clear line and \r return cursor to start of line
-                    print('\033[2K\r', end='')
-                else:
-                    # omit progress altogether
-                    process_source(executor, source, sinks, arguments.block_size)
+                    sinks.append(Progress(source=source))
+
+                process_source(executor, source, sinks, arguments.block_size)
 
                 results = OrderedDict((sink.name, sink.result()) for sink in sinks)
                 for name, result in results.items():
-                    print('  {:<12} {}'.format(name, result))
+                    if result is not None:  # exclude Nones from results
+                        print('  {:<12} {}'.format(name, result))
 
                 # create meta data leader
                 # TODO: using kwargs here would be nice, but that destroys order :( (see PEP-468)
