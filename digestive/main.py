@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime, timezone
-from functools import partial
 from math import log
 from os import path, walk
 import re
