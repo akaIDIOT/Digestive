@@ -2,10 +2,12 @@ from argparse import ArgumentParser
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime, timezone
+from functools import partial
 from math import log
 from os import path, walk
 import re
 import sys
+import time
 import yaml
 from yaml.nodes import MappingNode
 
@@ -97,8 +99,7 @@ def parse_arguments(arguments=None):
     # TODO: specifying --format ewf on files that don't match supported exts will raise ValueError
     parser.add_argument('-f', '--format', choices=('auto', 'raw', 'ewf'), default='auto',
                         help='specify source format (defaults to auto)')
-    # TODO: add choice (and implement) throughput / speed, eta
-    parser.add_argument('-p', '--progress', choices=('bytes',), default='bytes',
+    parser.add_argument('-p', '--progress', choices=('bytes', 'speed'), default='bytes',
                         help='show progress information (defaults to bytes)')
     parser.add_argument('-P', '--no-progress', action='store_false', dest='progress',
                         help='disable progress output (always disabled for piped output)')
@@ -210,10 +211,18 @@ def get_source(file, source_type='auto'):
 
 
 class Progress(Sink):
-    def __init__(self, source, **kwargs):
+    # TODO: rather hacky still…
+    types = {
+        'bytes': lambda processed, **kwargs: file_size(processed, template='{value:>8.3f} {unit}'),
+        'speed': lambda processed, elapsed, **kwargs: file_size(processed / elapsed, template='{value:>8.3f} {unit}/s')
+    }
+
+    def __init__(self, source, progress='bytes', **kwargs):
         super().__init__('progress', **kwargs)
         self.value = 0
+        self.started = time.monotonic()
         self.end = len(source)
+        self.progress = self.types[progress]
 
     def process(self, data):
         self.value += len(data)
@@ -226,7 +235,8 @@ class Progress(Sink):
         print('\033[2K\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
             percent=(self.value / self.end),
             bar=('»' * int((20 * self.value / self.end))),
-            value=file_size(self.value, '{value:>8.3f} {unit}')
+            # TODO: rather hacky here tooo…
+            value=self.progress(processed=self.value, elapsed=time.monotonic() - self.started)
         ), end='')
 
     def result(self):
@@ -271,7 +281,7 @@ def main(arguments=None):
 
                 if arguments.progress and sys.stdout.isatty():
                     # stdout should support carriage returns, engage progress information!
-                    sinks.append(Progress(source=source))
+                    sinks.append(Progress(source=source, progress=arguments.progress))
 
                 size = process_source(executor, source, sinks, arguments.block_size)
 
