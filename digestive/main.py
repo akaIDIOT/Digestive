@@ -161,13 +161,18 @@ def process_source(executor, source, sinks, block_size=1 << 20):
     :param source: The data source to read from.
     :param sinks: The sink instances to process data chunks with.
     :param block_size: The maximum chunk size to read.
+    :return: The total number of bytes read.
     """
+    total_size = 0
     generator = source.blocks(block_size)
     block = next(generator, False)
     while block:
+        total_size += len(block)
         futures = [executor.submit(sink.process, block) for sink in sinks]
         block = next(generator, False)
         wait(futures)
+
+    return total_size
 
 
 def files(sources, recurse=False, followlinks=False):
@@ -268,7 +273,7 @@ def main(arguments=None):
                     # stdout should support carriage returns, engage progress information!
                     sinks.append(Progress(source=source))
 
-                process_source(executor, source, sinks, arguments.block_size)
+                size = process_source(executor, source, sinks, arguments.block_size)
 
                 results = OrderedDict((sink.name, sink.result()) for sink in sinks)
                 for name, result in results.items():
@@ -279,7 +284,7 @@ def main(arguments=None):
                 # TODO: using kwargs here would be nice, but that destroys order :( (see PEP-468)
                 info = OrderedDict((
                     ('source', file),
-                    ('size', len(source)),
+                    ('size', size),
                     ('completed', datetime.now(tz=timezone.utc))
                 ))
                 # add results
