@@ -214,8 +214,12 @@ def get_source(file, source_type='auto'):
 
 class Progress:
     types = {
-        'bytes': lambda processed, elapsed: file_size(processed, template='{value:>8.3f} {unit}'),
-        'speed': lambda processed, elapsed: file_size(processed / elapsed, template='{value:>8.3f} {unit}/s')
+        # show progress as total bytes processed
+        'bytes': lambda processed, elapsed: file_size(processed,
+                                                      template='{value:>8.3f} {unit}'),
+        # show progress as bytes processed per second (use arbitrary value to avoid division by zero)
+        'speed': lambda processed, elapsed: file_size(processed / (elapsed or 1.0),
+                                                      template='{value:>8.3f} {unit}/s')
     }
 
     def __init__(self, source, progress='bytes'):
