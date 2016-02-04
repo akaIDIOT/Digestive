@@ -153,7 +153,7 @@ def output_to_file(output):
             _ = yield  # noqa: variable _ is assigned to explicitly to make clear this is a collecting yield
 
 
-def process_source(executor, source, sinks, block_size=1 << 20):
+def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
     """
     Processes a data source, feeding chunks of at most block_size to each sink in parallel.
 
@@ -161,6 +161,7 @@ def process_source(executor, source, sinks, block_size=1 << 20):
     :param source: The data source to read from.
     :param sinks: The sink instances to process data chunks with.
     :param block_size: The maximum chunk size to read.
+    :param progress: a progress indicator, called with ``set(total_size)`` after each block has been processed
     :return: The total number of bytes read.
     """
     total_size = 0
@@ -171,6 +172,8 @@ def process_source(executor, source, sinks, block_size=1 << 20):
         futures = [executor.submit(sink.process, block) for sink in sinks]
         block = next(generator, False)
         wait(futures)
+        if progress:
+            progress.set(total_size)
 
     return total_size
 
@@ -209,22 +212,23 @@ def get_source(file, source_type='auto'):
         raise ValueError('unknown source type: {}'.format(source_type))
 
 
-class Progress(Sink):
-    # TODO: rather hacky still…
+class Progress:
     types = {
-        'bytes': lambda processed, **kwargs: file_size(processed, template='{value:>8.3f} {unit}'),
-        'speed': lambda processed, elapsed, **kwargs: file_size(processed / elapsed, template='{value:>8.3f} {unit}/s')
+        'bytes': lambda processed, elapsed: file_size(processed, template='{value:>8.3f} {unit}'),
+        'speed': lambda processed, elapsed: file_size(processed / elapsed, template='{value:>8.3f} {unit}/s')
     }
 
-    def __init__(self, source, progress='bytes', **kwargs):
-        super().__init__('progress', **kwargs)
+    def __init__(self, source, progress='bytes'):
         self.value = 0
         self.started = time.monotonic()
         self.end = len(source)
         self.progress = self.types[progress]
 
-    def process(self, data):
-        self.value += len(data)
+    def __enter__(self):
+        return self
+
+    def set(self, num):
+        self.value = num
         if self.end:
             # progress only makes sense if end > 0
             self.print_progress()
@@ -234,14 +238,11 @@ class Progress(Sink):
         print('\033[2K\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
             percent=(self.value / self.end),
             bar=('»' * int((20 * self.value / self.end))),
-            # TODO: rather hacky here tooo…
             value=self.progress(processed=self.value, elapsed=time.monotonic() - self.started)
         ), end='')
 
-    def result(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         print('\033[2K\r', end='')
-        # signal to not use this Sink's result
-        return None
 
 
 def main(arguments=None):
@@ -279,10 +280,10 @@ def main(arguments=None):
                 print('{} ({})'.format(source, file_size(len(source))), flush=True)
 
                 if arguments.progress and sys.stdout.isatty():
-                    # stdout should support carriage returns, engage progress information!
-                    sinks.append(Progress(source=source, progress=arguments.progress))
-
-                size = process_source(executor, source, sinks, arguments.block_size)
+                    with Progress(source, arguments.progress) as progress:
+                        size = process_source(executor, source, sinks, arguments.block_size, progress=progress)
+                else:
+                    size = process_source(executor, source, sinks, arguments.block_size)
 
                 results = OrderedDict((sink.name, sink.result()) for sink in sinks)
                 for name, result in results.items():
