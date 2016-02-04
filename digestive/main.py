@@ -101,8 +101,7 @@ def parse_arguments(arguments=None):
     parser.add_argument('-p', '--progress', choices=('bytes', 'speed'), default='bytes',
                         help='show progress information (defaults to bytes)')
     parser.add_argument('-P', '--no-progress', action='store_false', dest='progress',
-                        help='disable progress output (always disabled for piped output)')
-    # TODO: -t, --time
+                        help='disable progress output (always disabled for redirected output)')
     parser.add_argument('-r', '--recursive', action='store_true',
                         help='process sources recursively')
     parser.add_argument('-o', '--output',

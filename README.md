@@ -41,10 +41,9 @@ It currently supports the following options (use `digestive --help` to show opti
                             1M)
       -f {auto,raw,ewf}, --format {auto,raw,ewf}
                             specify source format (defaults to auto)
-                            specify source format (defaults to auto)
       -p {bytes,speed}, --progress {bytes,speed}
                             show progress information (defaults to bytes)
-      -P, --no-progress     disable progress output (always disabled for piped
+      -P, --no-progress     disable progress output (always disabled for redirected
                             output)
       -r, --recursive       process sources recursively
       -o OUTPUT, --output OUTPUT
