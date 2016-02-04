@@ -20,9 +20,10 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
     install_requires=['decorator', 'PyYAML'],
-    tests_require=['pytest', 'mock'],
+    tests_require=['pyhamcrest', 'mock', 'pytest'],
     extras_require={
         'sha3': 'pysha3',
     },

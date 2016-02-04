@@ -2,6 +2,7 @@ from argparse import Namespace
 from concurrent.futures import ThreadPoolExecutor
 from os import path
 
+from hamcrest import match_equality as eq, contains_string
 from mock import ANY, call, MagicMock, Mock, patch
 import pytest
 
@@ -134,6 +135,22 @@ def test_process_source_progress():
             process_source(executor, source, [sink], block_size=3, progress=progress)
 
         progress.set.assert_has_calls([call(3), call(4)])
+
+
+def test_progress():
+    with patch('digestive.main.print') as print:
+        with Progress('string has length 20') as progress:
+            progress.set(5)
+            print.assert_called_with(eq(contains_string('25%')), end='')
+
+            progress.set(10)
+            print.assert_called_with(eq(contains_string('50%')), end='')
+
+            progress.set(20)
+            print.assert_called_with(eq(contains_string('100%')), end='')
+
+        # clear current line
+        print.assert_called_with('\033[2K\r', end='')
 
 
 def test_main():

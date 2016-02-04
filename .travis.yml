@@ -14,13 +14,17 @@ before_install:
   - sudo apt-get install -y libewf2
 
 install:
+  # runtime deps
+  - pip install decorator
+  - pip install pysha3
+  - pip install PyYAML
+  # test deps
   - pip install flake8
+  - pip install pyhamcrest
   - pip install pep8-naming
+  # misc deps
   - pip install coveralls
   - pip install wheel
-  - pip install decorator
-  - pip install PyYAML
-  - pip install pysha3
 
 script:
   - flake8 --max-line-length=120 digestive
