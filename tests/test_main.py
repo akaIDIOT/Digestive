@@ -8,7 +8,7 @@ import pytest
 from digestive.entropy import Entropy
 from digestive.hash import MD5, SHA1, SHA256, SHA512, sha3_enabled, SHA3256, SHA3512
 from digestive.io import Source
-from digestive.main import file_size, main, num_bytes, parse_arguments, process_arguments, process_source
+from digestive.main import file_size, main, num_bytes, parse_arguments, process_arguments, process_source, Progress
 
 
 here = path.dirname(path.abspath(__file__))
@@ -122,6 +122,18 @@ def test_process_source():
             process_source(executor, source, [sink], block_size=1)
 
         assert sink.process.call_count == 4
+
+
+def test_process_source_progress():
+    with ThreadPoolExecutor(2) as executor:
+        source = Source(path.join(here, 'files/1234'))
+        sink = Mock()
+        progress = Mock(spec=Progress)
+
+        with source:
+            process_source(executor, source, [sink], block_size=3, progress=progress)
+
+        progress.set.assert_has_calls([call(3), call(4)])
 
 
 def test_main():
