@@ -1,5 +1,6 @@
 from os import path
 
+from digestive.ewf import EWFSource
 from digestive.hash import MD5, SHA1, SHA256, SHA512
 from digestive.io import Source
 
@@ -92,7 +93,7 @@ def test_zeroes():
         assert result == expected
 
 
-def test_random():
+def test_random_raw():
     sinks = [MD5(), SHA1(), SHA256(), SHA512()]
     with Source(path.join(here, 'files/random.dd')) as source:
         buffer = bytearray(1 << 20)
@@ -108,6 +109,26 @@ def test_random():
         # sha256sum files/random.dd
         '810ec5f2086379f0e8000456dbf2aede8538fbc9d9898835f114c8771ed834b5',
         # sha512sum files/random.dd
+        '24dbb6cb56757a621fb8e6a8c8733f1cfc3c77bd23ac325e672eaaf856eac602'
+        '307541ac434f598afb62448e90b3608344cfeb2e64778d3f7024bc69f5bb46ef',
+    ]
+    for (result, expected) in zip((sink.result() for sink in sinks), hashes):
+        assert result == expected
+
+
+def test_random_ewf():
+    sinks = [MD5(), SHA1(), SHA256(), SHA512()]
+    with EWFSource(path.join(here, 'files/random.E01')) as source:
+        buffer = bytearray(1 << 20)
+        source.readinto(buffer)
+        for sink in sinks:
+            sink.process(buffer)
+
+    hashes = [
+        # random.E01 is an EWF-acquired version of random.dd, hashes should be identical
+        '257f5c2913ea856cb0a2313f167452d4',
+        '2f8a9e749cc8e46bebe602827228e76611346f54',
+        '810ec5f2086379f0e8000456dbf2aede8538fbc9d9898835f114c8771ed834b5',
         '24dbb6cb56757a621fb8e6a8c8733f1cfc3c77bd23ac325e672eaaf856eac602'
         '307541ac434f598afb62448e90b3608344cfeb2e64778d3f7024bc69f5bb46ef',
     ]

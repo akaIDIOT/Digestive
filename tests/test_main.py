@@ -138,7 +138,7 @@ def test_main():
         output_generator = MagicMock()
         output.return_value = output_generator
         # force raw format to treat random.E01 as a regular file (courtesy of Travis…)
-        arguments = ['--hashes', '-f', 'raw', '--recursive', '--output', '/dev/null', path.join(here, 'files')]
+        arguments = ['--hashes', '--recursive', '--output', '/dev/null', path.join(here, 'files')]
         main(arguments)
         # assert recursing into files and processing the test files, posting results to output
         output.assert_called_with('/dev/null')
