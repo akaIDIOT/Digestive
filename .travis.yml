@@ -1,17 +1,10 @@
-# request a 14.04 build agent
-sudo: true
-dist: trusty
-
 language: python
 
 python:
-  - 3.3
-  - 3.4
   - 3.5
-
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libewf2
+  - 3.6
+  - 3.7
+  - pypy3
 
 install:
   # runtime deps

@@ -18,15 +18,12 @@ setup(
         'Environment :: Console',
         'License :: OSI Approved :: ISC License (ISCL)',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3 :: Only',
     ],
-    install_requires=['decorator', 'PyYAML'],
-    tests_require=['pyhamcrest', 'mock', 'pytest'],
-    extras_require={
-        'sha3': 'pysha3',
-    },
+    install_requires=['decorator', 'pyyaml', 'sha3'],
     entry_points={
         'console_scripts': {
             'digestive = digestive.main:main'
