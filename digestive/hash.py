@@ -35,14 +35,6 @@ class SHA512(HashDigest):
         super().__init__('sha512', hashlib.sha512(), **kwargs)
 
 
-try:
-    # importing sha3 will add sha3 digests to hashlib
-    import sha3  # noqa
-    sha3_enabled = True
-except ImportError:
-    sha3_enabled = False
-
-
 class SHA3256(HashDigest):
     def __init__(self, **kwargs):
         super().__init__('sha3-256', hashlib.sha3_256(), **kwargs)

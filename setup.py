@@ -23,7 +23,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3 :: Only',
     ],
-    install_requires=['decorator', 'pyyaml', 'sha3'],
+    install_requires=['decorator', 'pyyaml'],
     entry_points={
         'console_scripts': {
             'digestive = digestive.main:main'

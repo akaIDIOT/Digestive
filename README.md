@@ -15,7 +15,7 @@ Run `python3 setup.py install` to install both the package and commandline scrip
 It currently supports the following options (use `digestive --help` to show options after installation):
 
     usage: digestive [-h] [-m] [-1] [-2] [-5] [--hashes] [-e] [-j JOBS] [-b BYTES]
-                     [-f {auto,raw,ewf}] [-p {bytes,speed}] [-P] [-r] [-o OUTPUT]
+                     [-p {bytes,speed}] [-P] [-r] [-o OUTPUT]
                      FILE [FILE ...]
     
     run multiple digests on files
@@ -39,8 +39,6 @@ It currently supports the following options (use `digestive --help` to show opti
       -b BYTES, --block-size BYTES
                             read data in chunks of BYTES at a time (defaults to
                             1M)
-      -f {auto,raw,ewf}, --format {auto,raw,ewf}
-                            specify source format (defaults to auto)
       -p {bytes,speed}, --progress {bytes,speed}
                             show progress information (defaults to bytes)
       -P, --no-progress     disable progress output (always disabled for redirected
@@ -49,14 +47,9 @@ It currently supports the following options (use `digestive --help` to show opti
       -o OUTPUT, --output OUTPUT
                             write yaml-encoded output to file
 
-**Note:** EWF-support requires 'version 2' of [`libewf`](https://github.com/libyal/libewf).
-Ubuntu or Debian-based systems will likely find this package named `libewf2`, `libewf1` won't work.
-Other distributions might not make this distinctions; look for for `libewf.so.2`.
-
 Everything accessible from the console command is available from python:
 
 - `digestive.io`: classes `Source` and `Sink`, used to read blocks of data from a source and provide a common interface to digest algorithms;
-- `digestive.ewf`: class `EWFSource` to read blocks of data from EWF filesets and the corresponding functions interfacing with [`libewf`](https://github.com/libyal/libewf);
 - `digestive.hash`: `Sink` implementations wrapping common hash digests MD5, SHA1, SHA256 and SHA512 (with SHA3-256 and SHA3-512 enabled if they're available);
 - `digestive.entropy`: `Sink` implementation to calculate the binary entropy of a source;
 - `digestive.main`: functions used by the commandline entry point to parse arguments and efficiently process data sources.

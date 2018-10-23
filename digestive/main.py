@@ -12,9 +12,8 @@ from yaml.nodes import MappingNode
 
 import digestive
 from digestive.entropy import Entropy
-from digestive.ewf import EWFSource, supported_exts as ewf_supported_formats
-from digestive.hash import MD5, SHA1, SHA256, SHA512, sha3_enabled, SHA3256, SHA3512
-from digestive.io import Sink, Source
+from digestive.hash import MD5, SHA1, SHA256, SHA512, SHA3256, SHA3512
+from digestive.io import Source
 
 
 # binary suffixes for byte sizes
@@ -76,13 +75,12 @@ def parse_arguments(arguments=None):
     hashes = [MD5, SHA1, SHA256, SHA512]
     hashes_help = 'calculate MD5, SHA-1, SHA-256 and SHA-512 hashes (equivalent to -m125)'
 
-    if sha3_enabled:
-        parser.add_argument('-3', '--sha3-256', action='append_const', dest='sinks', const=SHA3256,
-                            help='calculate SHA3-256 hash')
-        parser.add_argument('--sha3-512', action='append_const', dest='sinks', const=SHA3512,
-                            help='calculate SHA3-512 hash')
-        hashes.append(SHA3256)
-        hashes_help = 'calculate MD5, SHA-1, SHA-256, SHA-512 and SHA3-256 hashes (equivalent to -m1253)'
+    parser.add_argument('-3', '--sha3-256', action='append_const', dest='sinks', const=SHA3256,
+                        help='calculate SHA3-256 hash')
+    parser.add_argument('--sha3-512', action='append_const', dest='sinks', const=SHA3512,
+                        help='calculate SHA3-512 hash')
+    hashes.append(SHA3256)
+    hashes_help = 'calculate MD5, SHA-1, SHA-256, SHA-512 and SHA3-256 hashes (equivalent to -m1253)'
 
     # convenience switch to include all hashes
     parser.add_argument('--hashes', action='store_const', dest='sinks', const=hashes,
@@ -95,9 +93,6 @@ def parse_arguments(arguments=None):
                         help='use up to %(metavar)s threads to process digests (defaults to the number of digests)')
     parser.add_argument('-b', '--block-size', type=num_bytes, metavar='BYTES', default='1M',
                         help='read data in chunks of %(metavar)s at a time (defaults to 1M)')
-    # TODO: specifying --format ewf on files that don't match supported exts will raise ValueError
-    parser.add_argument('-f', '--format', choices=('auto', 'raw', 'ewf'), default='auto',
-                        help='specify source format (defaults to auto)')
     parser.add_argument('-p', '--progress', choices=('bytes', 'speed'), default='bytes',
                         help='show progress information (defaults to bytes)')
     parser.add_argument('-P', '--no-progress', action='store_false', dest='progress',
@@ -198,19 +193,6 @@ def files(sources, recurse=False, followlinks=False):
         yield from sources
 
 
-def get_source(file, source_type='auto'):
-    if source_type == 'raw':
-        return Source(file)
-    elif source_type == 'ewf':
-        return EWFSource(file)
-    elif source_type == 'auto':
-        basename, ext = path.splitext(file)
-        source_type = 'ewf' if ext.lower() in ewf_supported_formats else 'raw'
-        return get_source(file, source_type=source_type)
-    else:
-        raise ValueError('unknown source type: {}'.format(source_type))
-
-
 class Progress:
     types = {
         # show progress as total bytes processed
@@ -273,10 +255,8 @@ def main(arguments=None):
     output.send(info)
 
     with ThreadPoolExecutor(arguments.jobs) as executor:
-        # TODO: globs like tests/files/file.* includes both file.E01 and file.E02
-        # TODO: only file.E01 will get treated as ewf, file.E02 should be removed from sources
         for file in files(arguments.sources, arguments.recursive):
-            with get_source(file, arguments.format) as source:
+            with Source(file) as source:
                 # instantiate sinks from requested types
                 sinks = [sink() for sink in arguments.sinks]
                 # flush initial status line to force it to show in something like | less

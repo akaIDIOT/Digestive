@@ -3,11 +3,11 @@ from concurrent.futures import ThreadPoolExecutor
 from os import path
 
 from hamcrest import match_equality as eq, contains_string
-from mock import ANY, call, MagicMock, Mock, patch
 import pytest
+from unittest.mock import ANY, call, MagicMock, Mock, patch
 
 from digestive.entropy import Entropy
-from digestive.hash import MD5, SHA1, SHA256, SHA512, sha3_enabled, SHA3256, SHA3512
+from digestive.hash import MD5, SHA1, SHA256, SHA512, SHA3256, SHA3512
 from digestive.io import Source
 from digestive.main import file_size, main, num_bytes, parse_arguments, process_arguments, process_source, Progress
 
@@ -91,16 +91,15 @@ def test_parse_arguments():
     assert arguments.block_size == 4 << 20
     assert arguments.recursive
 
-    if sha3_enabled:
-        arguments = ['--hashes', 'source']
-        arguments = parse_arguments(arguments)
+    arguments = ['--hashes', 'source']
+    arguments = parse_arguments(arguments)
 
-        assert SHA3256 in arguments.sinks
+    assert SHA3256 in arguments.sinks
 
-        arguments = ['--sha3-512', 'source']
-        arguments = parse_arguments(arguments)
+    arguments = ['--sha3-512', 'source']
+    arguments = parse_arguments(arguments)
 
-        assert SHA3512 in arguments.sinks
+    assert SHA3512 in arguments.sinks
 
 
 def test_process_source():
