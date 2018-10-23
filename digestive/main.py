@@ -7,12 +7,13 @@ from os import path, walk
 import re
 import sys
 import time
+
 import yaml
 from yaml.nodes import MappingNode
 
 import digestive
 from digestive.entropy import Entropy
-from digestive.hash import MD5, SHA1, SHA256, SHA512, SHA3256, SHA3512
+from digestive.hash import MD5, SHA1, SHA256, SHA3256, SHA3512, SHA512
 from digestive.io import Source
 
 
