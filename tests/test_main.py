@@ -8,7 +8,7 @@ import pytest
 from unittest.mock import ANY, call, MagicMock, Mock, patch
 
 from digestive.entropy import Entropy
-from digestive.hash import MD5, SHA1, SHA256, SHA512, SHA3256, SHA3512
+from digestive.hash import MD5, SHA1, SHA256, SHA512, SHA3256, SHA3512, sha3_available
 from digestive.io import Source
 from digestive.main import file_size, main, num_bytes, parse_arguments, process_arguments, process_source, Progress
 
@@ -95,12 +95,13 @@ def test_parse_arguments():
     arguments = ['--hashes', 'source']
     arguments = parse_arguments(arguments)
 
-    assert SHA3256 in arguments.sinks
+    if sha3_available:
+        assert SHA3256 in arguments.sinks
 
-    arguments = ['--sha3-512', 'source']
-    arguments = parse_arguments(arguments)
+        arguments = ['--sha3-512', 'source']
+        arguments = parse_arguments(arguments)
 
-    assert SHA3512 in arguments.sinks
+        assert SHA3512 in arguments.sinks
 
 
 def test_process_source():
@@ -163,6 +164,29 @@ def test_main():
         mocked_print.assert_any_call('{} ({})'.format(path.join(here, 'files/1234'), '4 bytes'), flush=True)
         mocked_print.assert_any_call('  sha256       9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a')
 
+    four_bytes_output = {
+        'source': eq(ends_with('files/1234')),
+        'size': 4,
+        'completed': ANY,
+        'md5': '08d6c05a21512a79a1dfeb9d2a8f262f',
+        'sha1': '12dada1fff4d4787ade3333147202c3b443e376f',
+        'sha256': '9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a',
+        'sha512': 'a7c976db1723adb41274178dc82e9b777941ab201c69de61d0f2bc6d27a3598f594fa748e50d88d3c2bf1e2c2e72c3cfef78c3c6d4afa90391f7e33ababca48e',
+    }
+    random_dd_output = {
+        'source': eq(ends_with('files/random.dd')),
+        'size': 1048576,
+        'completed': eq(instance_of(datetime)),
+        'md5': '257f5c2913ea856cb0a2313f167452d4',
+        'sha1': '2f8a9e749cc8e46bebe602827228e76611346f54',
+        'sha256': '810ec5f2086379f0e8000456dbf2aede8538fbc9d9898835f114c8771ed834b5',
+        'sha512': '24dbb6cb56757a621fb8e6a8c8733f1cfc3c77bd23ac325e672eaaf856eac602307541ac434f598afb62448e90b3608344cfeb2e64778d3f7024bc69f5bb46ef',
+    }
+
+    if sha3_available:
+        four_bytes_output['sha3-256'] = '966dbdcbd0e0348faa1ccbce5a62b8e73b0d08955d666db82243b303d9bd9502'
+        random_dd_output['sha3-256'] = 'f704f27aaf0d689f02917be02c1e873abefab54b9b517bcdf3d868569d6b2e65'
+
     with patch('builtins.print'), patch('digestive.main.output_to_file') as output:
         output_generator = MagicMock()
         output.return_value = output_generator
@@ -175,25 +199,7 @@ def test_main():
             # initial info call
             call({'digestive': '0.1', 'started': ANY}),
             # hashes of tests/files/1234
-            call({
-                'source': eq(ends_with('files/1234')),
-                'size': 4,
-                'completed': ANY,
-                'md5': '08d6c05a21512a79a1dfeb9d2a8f262f',
-                'sha1': '12dada1fff4d4787ade3333147202c3b443e376f',
-                'sha256': '9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a',
-                'sha512': 'a7c976db1723adb41274178dc82e9b777941ab201c69de61d0f2bc6d27a3598f594fa748e50d88d3c2bf1e2c2e72c3cfef78c3c6d4afa90391f7e33ababca48e',
-                'sha3-256': '966dbdcbd0e0348faa1ccbce5a62b8e73b0d08955d666db82243b303d9bd9502',
-            }),
+            call(four_bytes_output),
             # hashes of tests/files/random.dd
-            call({
-                'source': eq(ends_with('files/random.dd')),
-                'size': 1048576,
-                'completed': eq(instance_of(datetime)),
-                'md5': '257f5c2913ea856cb0a2313f167452d4',
-                'sha1': '2f8a9e749cc8e46bebe602827228e76611346f54',
-                'sha256': '810ec5f2086379f0e8000456dbf2aede8538fbc9d9898835f114c8771ed834b5',
-                'sha512': '24dbb6cb56757a621fb8e6a8c8733f1cfc3c77bd23ac325e672eaaf856eac602307541ac434f598afb62448e90b3608344cfeb2e64778d3f7024bc69f5bb46ef',
-                'sha3-256': 'f704f27aaf0d689f02917be02c1e873abefab54b9b517bcdf3d868569d6b2e65'
-            })
+            call(random_dd_output)
         ], any_order=True)
