@@ -13,7 +13,7 @@ from yaml.nodes import MappingNode
 
 import digestive
 from digestive.entropy import Entropy
-from digestive.hash import MD5, SHA1, SHA256, SHA3256, SHA3512, SHA512
+from digestive.hash import MD5, SHA1, SHA256, SHA3256, SHA3512, sha3_available, SHA512
 from digestive.io import Source
 
 
@@ -76,12 +76,13 @@ def parse_arguments(arguments=None):
     hashes = [MD5, SHA1, SHA256, SHA512]
     hashes_help = 'calculate MD5, SHA-1, SHA-256 and SHA-512 hashes (equivalent to -m125)'
 
-    parser.add_argument('-3', '--sha3-256', action='append_const', dest='sinks', const=SHA3256,
-                        help='calculate SHA3-256 hash')
-    parser.add_argument('--sha3-512', action='append_const', dest='sinks', const=SHA3512,
-                        help='calculate SHA3-512 hash')
-    hashes.append(SHA3256)
-    hashes_help = 'calculate MD5, SHA-1, SHA-256, SHA-512 and SHA3-256 hashes (equivalent to -m1253)'
+    if sha3_available:
+        parser.add_argument('-3', '--sha3-256', action='append_const', dest='sinks', const=SHA3256,
+                            help='calculate SHA3-256 hash')
+        parser.add_argument('--sha3-512', action='append_const', dest='sinks', const=SHA3512,
+                            help='calculate SHA3-512 hash')
+        hashes.append(SHA3256)
+        hashes_help = 'calculate MD5, SHA-1, SHA-256, SHA-512 and SHA3-256 hashes (equivalent to -m1253)'
 
     # convenience switch to include all hashes
     parser.add_argument('--hashes', action='store_const', dest='sinks', const=hashes,
