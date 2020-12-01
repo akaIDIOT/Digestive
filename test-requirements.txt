@@ -4,20 +4,26 @@
 #
 #    pip-compile --output-file test-requirements.txt test-requirements.in
 #
-atomicwrites==1.2.1       # via pytest
-attrs==18.2.0             # via pytest
-coverage==4.5.1
-flake8-comprehensions==1.4.1
-flake8-import-order==0.18
+attrs==20.3.0             # via pytest
+coverage==5.3             # via -r test-requirements.in
+flake8-comprehensions==3.3.0  # via -r test-requirements.in
+flake8-import-order==0.18.1  # via -r test-requirements.in
 flake8-polyfill==1.0.2    # via pep8-naming
-flake8==3.5.0
+flake8==3.8.4             # via -r test-requirements.in, flake8-comprehensions, flake8-polyfill
+importlib-metadata==3.1.0  # via flake8, flake8-comprehensions, pluggy, pytest
+iniconfig==1.1.1          # via pytest
 mccabe==0.6.1             # via flake8
-more-itertools==4.3.0     # via pytest
-pep8-naming==0.7.0
-pluggy==0.8.0             # via pytest
-py==1.7.0                 # via pytest
-pycodestyle==2.3.1        # via flake8, flake8-import-order
-pyflakes==1.6.0           # via flake8
-pyhamcrest==1.9.0
-pytest==3.9.2
-six==1.11.0               # via more-itertools, pyhamcrest, pytest
+packaging==20.7           # via pytest
+pep8-naming==0.11.1       # via -r test-requirements.in
+pluggy==0.13.1            # via pytest
+py==1.9.0                 # via pytest
+pycodestyle==2.6.0        # via flake8, flake8-import-order
+pyflakes==2.2.0           # via flake8
+pyhamcrest==2.0.2         # via -r test-requirements.in
+pyparsing==2.4.7          # via packaging
+pytest==6.1.2             # via -r test-requirements.in
+toml==0.10.2              # via pytest
+zipp==3.4.0               # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

@@ -4,5 +4,5 @@
 #
 #    pip-compile --upgrade --output-file requirements.txt setup.py
 #
-decorator==4.3.0
-pyyaml==3.13
+decorator==4.4.2          # via digestive (setup.py)
+pyyaml==5.3.1             # via digestive (setup.py)
