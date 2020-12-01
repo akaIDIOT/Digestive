@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime, timezone
 from math import log
@@ -9,7 +8,6 @@ import sys
 import time
 
 import yaml
-from yaml.nodes import MappingNode
 
 import digestive
 from digestive.entropy import Entropy
@@ -238,22 +236,13 @@ def main(arguments=None):
 
     :param arguments: Commandline arguments, passed to parse_arguments.
     """
-
-    # add an order-retaining representer for OrderedDict (default impl calls sorted())
-    yaml.add_representer(OrderedDict, lambda dumper, data: MappingNode(
-        'tag:yaml.org,2002:map',
-        # create a represented list of tuples, in order or data.items()
-        [(dumper.represent_data(key), dumper.represent_data(value)) for key, value in data.items()]
-    ))
-
     arguments = parse_arguments(arguments)
     # create the output generator
     output = output_to_file(arguments.output)
     # initialize output (moves it to the first occurrence of yield)
     next(output)
-    info = OrderedDict()
-    info['digestive'] = str(digestive.__version__)
-    info['started'] = datetime.now(tz=timezone.utc)
+    info = {'digestive': str(digestive.__version__),
+            'started': datetime.now(tz=timezone.utc)}
     output.send(info)
 
     with ThreadPoolExecutor(arguments.jobs) as executor:
@@ -270,18 +259,16 @@ def main(arguments=None):
                 else:
                     size = process_source(executor, source, sinks, arguments.block_size)
 
-                results = OrderedDict((sink.name, sink.result()) for sink in sinks)
+                results = {sink.name: sink.result() for sink in sinks}
                 for name, result in results.items():
                     if result is not None:  # exclude Nones from results
                         print('  {:<12} {}'.format(name, result))
 
                 # create meta data leader
                 # TODO: using kwargs here would be nice, but that destroys order :( (see PEP-468)
-                info = OrderedDict((
-                    ('source', file),
-                    ('size', size),
-                    ('completed', datetime.now(tz=timezone.utc))
-                ))
+                info = {'source': file,
+                        'size': size,
+                        'completed': datetime.now(tz=timezone.utc)}
                 # add results
                 info.update(results)
                 # send info to the output collector
