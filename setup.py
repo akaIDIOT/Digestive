@@ -6,7 +6,7 @@ import digestive
 
 setup(
     name='digestive',
-    version=digestive.__version__,
+    version=digestive.__version__,  # TODO: don't read this from (uninstalled) module
     url='https://github.com/akaIDIOT/Digestive',
     packages=find_packages(),
     description='Run several digest algorithms on the same data efficiently',
