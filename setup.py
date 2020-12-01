@@ -25,7 +25,7 @@ setup(
     ],
     install_requires=(
         'decorator~=4.0',
-        'pyyaml~=5.0'
+        'pyyaml~=5.1'
     ),
     entry_points={
         'console_scripts': {
