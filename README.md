@@ -1,8 +1,7 @@
 Digestive :cookie:
 ==================
 
-[![Build Status](http://img.shields.io/travis/akaIDIOT/Digestive/master.svg?style=flat)](https://travis-ci.org/akaIDIOT/Digestive)
-[![Coverage Status](https://img.shields.io/coveralls/akaIDIOT/Digestive/master.svg?style=flat)](https://coveralls.io/r/akaIDIOT/Digestive)
+[![Build Status](https://img.shields.io/github/workflow/status/akaIDIOT/Digestive/Test%20package.svg?style=flat)](https://github.com/akaIDIOT/Digestive/actions)
 
 ----
 
