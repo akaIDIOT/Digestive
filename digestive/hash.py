@@ -4,6 +4,9 @@ from digestive.io import Sink
 
 
 class HashDigest(Sink):
+    # hash digest sinks are all verifiable
+    verifiable = True
+
     def __init__(self, name, digest, **kwargs):
         super().__init__(name, **kwargs)
         self._digest = digest

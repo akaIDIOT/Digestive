@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from os import path
 
 
@@ -58,10 +58,13 @@ class Source:
         self.fd = None
 
 
-class Sink:
+class Sink(ABC):
     """
     Base class for digesting data in chunks.
     """
+
+    # sinks are not verifiable by default
+    verifiable = False
 
     def __init__(self, name=None, **kwargs):
         self.name = name
