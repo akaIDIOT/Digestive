@@ -43,12 +43,3 @@ class SHA3256(HashDigest):
 class SHA3512(HashDigest):
     def __init__(self, **kwargs):
         super().__init__('sha3-512', hashlib.sha3_512(), **kwargs)
-
-
-sha3_available = False
-
-try:
-    hashlib.sha3_256()
-    sha3_available = True
-except AttributeError:
-    pass
