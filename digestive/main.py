@@ -140,7 +140,7 @@ def output_to_file(output):
                 # receive source name and sink results
                 value = yield
                 # dump value to output, creating an explicit document start
-                yaml.dump(value, stream=stream, explicit_start=True)
+                yaml.safe_dump(value, stream=stream, explicit_start=True, sort_keys=False)
     else:
         while True:
             # do nothing with any value received
