@@ -94,8 +94,14 @@ def parse_arguments(arguments=None):
                         help='disable progress output (always disabled for redirected output)')
     parser.add_argument('-r', '--recursive', action='store_true',
                         help='process sources recursively')
-    parser.add_argument('-o', '--output',
-                        help='write yaml-encoded output to file')
+
+    # mark output and verify mode as mutually exclusive
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('-o', '--output',
+                      help='write yaml-encoded output to file')
+    mode.add_argument('-v', '--verify', dest='mode', action='store_const', const='verify', default='digest',
+                      help='verify input files as %(prog)s output files')
+
     # positional arguments: sources
     parser.add_argument('sources', metavar='FILE', nargs='+',
                         help='input files')
@@ -114,7 +120,7 @@ def process_arguments(arguments, parser):
     :param parser: The parser used to parse the arguments (used for error reporting).
     :return: The passed arguments, adjusted where needed.
     """
-    if not arguments.sinks:
+    if arguments.mode == 'digest' and not arguments.sinks:
         parser.error('at least one sink is required')
 
     arguments.jobs = arguments.jobs if arguments.jobs else len(arguments.sinks)
