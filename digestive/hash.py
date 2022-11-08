@@ -17,12 +17,12 @@ class HashDigest(Sink):
 
 class MD5(HashDigest):
     def __init__(self, **kwargs):
-        super().__init__('md5', hashlib.md5(), **kwargs)
+        super().__init__('md5', hashlib.md5(), **kwargs)  # nosec: B324
 
 
 class SHA1(HashDigest):
     def __init__(self, **kwargs):
-        super().__init__('sha1', hashlib.sha1(), **kwargs)
+        super().__init__('sha1', hashlib.sha1(), **kwargs)  # nosec: B324
 
 
 class SHA256(HashDigest):
