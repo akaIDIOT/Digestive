@@ -44,6 +44,7 @@ def num_bytes(size):
 
     :param size: The size to be parsed.
     :return: An int.
+    :raises TypeError: on unrecognized input.
     """
     match = re.match(r'(?P<size>\d+)(?P<suffix>[{}])?$'.format(''.join(_suffixes)), size, re.IGNORECASE)
     if match:
@@ -112,7 +113,6 @@ def process_arguments(arguments, parser):
 
     :param arguments: The arguments to be processed (an argparse.Namespace object).
     :param parser: The parser used to parse the arguments (used for error reporting).
-    :return: The passed arguments, adjusted where needed.
     """
     if not arguments.sinks:
         parser.error('at least one sink is required')
@@ -126,7 +126,7 @@ def output_to_file(output):
     documents.
 
     :param output: The file name to write to (or None).
-    :return: A collecting generator (ignoring input if output was None).
+    :yield: Nothing, a collecting generator.
     """
     if output:
         # create a generator within a text-io context manager for output
@@ -139,7 +139,7 @@ def output_to_file(output):
     else:
         while True:
             # do nothing with any value received
-            _ = yield  # noqa: variable _ is assigned to explicitly to make clear this is a collecting yield
+            _ = yield  # variable _ is assigned to explicitly to make clear this is a collecting yield
 
 
 def process_source(executor, source, sinks, block_size=1 << 20, progress=None):
@@ -174,7 +174,7 @@ def files(sources, recurse=False, followlinks=False):
     :param sources: The base sources passed as arguments.
     :param recurse: Whether to recurse into directories.
     :param followlinks: Whether to follow symbolic links.
-    :return: A generator of sources based on the provided arguments.
+    :yield: Sources based on the provided arguments.
     """
     if recurse:
         for source in sources:
@@ -195,7 +195,7 @@ class Progress:
                                                       template='{value:>8.3f} {unit}'),
         # show progress as bytes processed per second (use arbitrary value to avoid division by zero)
         'speed': lambda processed, elapsed: file_size(processed / (elapsed or 1.0),
-                                                      template='{value:>8.3f} {unit}/s')
+                                                      template='{value:>8.3f} {unit}/s'),
     }
 
     def __init__(self, source, progress='bytes'):
@@ -218,7 +218,7 @@ class Progress:
         print('\033[2K\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
             percent=(self.value / self.end),
             bar=('»' * int((20 * self.value / self.end))),
-            value=self.progress(processed=self.value, elapsed=time.monotonic() - self.started)
+            value=self.progress(processed=self.value, elapsed=time.monotonic() - self.started),
         ), end='')
 
     def __exit__(self, exc_type, exc_val, exc_tb):

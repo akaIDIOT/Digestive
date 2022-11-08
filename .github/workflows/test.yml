@@ -1,13 +1,24 @@
 name: Test package
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+      - name: Install nox
+        run: pip install nox
+      - name: Run checks
+        run: nox --non-interactive --session check
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, pypy3]
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
     steps:
       - uses: actions/checkout@v2
         with:
@@ -15,19 +26,13 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r test-requirements.txt
-      - name: Run checks
-        run: |
-          flake8 digestive/
+      - name: Install nox
+        run: pip install nox
       - name: Run tests
-        run: |
-          coverage run --branch --source digestive --module py.test --strict tests/
+        # force nox to use "python", pointing to the version provided by the setup action
+        run: nox --non-interactive --force-python python --session test
       - name: Install package
-        run: |
-          python setup.py install
+        run: python setup.py install
       - name: Run locally
         run: |
           digestive --hashes --recursive --output /tmp/digestive-test-output.yml tests/files
