@@ -23,7 +23,7 @@ class Source:
 
     def open(self):
         # open named source in binary mode for reading
-        self.fd = open(self.source, 'rb')
+        self.fd = open(self.source, 'rb')  # noqa: SIM115 (cannot use context handler here)
 
     def readinto(self, buffer):
         """
@@ -39,7 +39,7 @@ class Source:
         Generator for blocks of at most block_size read from this source.
 
         :param block_size: Maximum number of bytes to read at a time.
-        :return: Data block generator.
+        :yield: Blocks of data
         """
         current, swap = memoryview(bytearray(block_size)), memoryview(bytearray(block_size))
         num_read = self.readinto(current)
