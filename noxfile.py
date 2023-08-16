@@ -4,8 +4,8 @@ import nox
 nox.options.sessions = ('check', 'test')
 
 
-all_supported_pythons = ('3.7', '3.8', '3.9', '3.10', '3.11', 'pypy3')
-oldest_python = '3.7'
+all_supported_pythons = ('3.8', '3.9', '3.10', '3.11', 'pypy3')
+oldest_python = '3.8'
 newest_python = '3.11'
 
 

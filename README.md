@@ -16,12 +16,12 @@ It currently supports the following options (use `digestive --help` to show opti
     usage: digestive [-h] [-m] [-1] [-2] [-5] [--hashes] [-e] [-j JOBS] [-b BYTES]
                      [-p {bytes,speed}] [-P] [-r] [-o OUTPUT]
                      FILE [FILE ...]
-    
+
     run multiple digests on files
-    
+
     positional arguments:
       FILE                  input files
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       -m, --md5             calculate MD5 hash
