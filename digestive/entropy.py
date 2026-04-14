@@ -17,4 +17,4 @@ class Entropy(Sink):
     def result(self):
         # calculate binary entropy as -Σ(1…n) p_i × log₂(p_i)
         entropy = -sum(count / self.length * log2(count / self.length) for count in self.counter.values())
-        return '{:.8f}'.format(entropy)
+        return f'{entropy:.8f}'

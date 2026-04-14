@@ -59,7 +59,7 @@ line-length = 120
 lint.ignore = ["COM812", "S324"]
 lint.isort.lines-after-imports = 2
 lint.select = [
-    "B", "C4", "COM", "E", "F", "N", "Q", "S", "SIM", "W",
+    "B", "C4", "COM", "E", "F", "N", "Q", "S", "SIM", "W", "UP",
 ]
 
 [tool.ruff.lint.per-file-ignores]

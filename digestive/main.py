@@ -34,7 +34,7 @@ def file_size(size, template='{value:.4g} {unit}'):
     order = int(log(size, 2) // 10) if size else 0
     if order >= len(_sizes):
         # exceeding ludicrous file sizes, default to bytes
-        return '{} bytes'.format(size)
+        return f'{size} bytes'
     return template.format(value=size / (1 << (order * 10)), unit=_sizes[order])
 
 
@@ -242,7 +242,7 @@ class Progress:
         print(
             '\033[2K\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
                 percent=(self.value / self.end),
-                bar=('»' * int((20 * self.value / self.end))),
+                bar=('»' * int(20 * self.value / self.end)),
                 value=self.progress(processed=self.value, elapsed=time.monotonic() - self.started),
             ),
             end='',
@@ -272,7 +272,7 @@ def main(arguments=None):
                 # instantiate sinks from requested types
                 sinks = [sink() for sink in arguments.sinks]
                 # flush initial status line to force it to show in something like | less
-                print('{} ({})'.format(source, file_size(len(source))), flush=True)
+                print(f'{source} ({file_size(len(source))})', flush=True)
 
                 if arguments.progress and sys.stdout.isatty():
                     with Progress(source, arguments.progress) as progress:
@@ -283,7 +283,7 @@ def main(arguments=None):
                 results = {sink.name: sink.result() for sink in sinks}
                 for name, result in results.items():
                     if result is not None:  # exclude Nones from results
-                        print('  {:<12} {}'.format(name, result))
+                        print(f'  {name:<12} {result}')
 
                 # create meta data leader
                 # TODO: using kwargs here would be nice, but that destroys order :( (see PEP-468)
