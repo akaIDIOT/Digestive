@@ -11,7 +11,7 @@ jobs:
         with:
           python-version: '3.14'
           cache: true
-          cache-dependency-path: 'pylock.toml'
+          cache-dependency-path: 'pdm.lock'
       - run: pdm install --group check
       - run: pdm run check
   test:
@@ -28,7 +28,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-python-prereleases: true
           cache: true
-          cache-dependency-path: 'pylock.toml'
+          cache-dependency-path: 'pdm.lock'
       - run: pdm install --group test
       - run: pdm run test
       - run: |
