@@ -19,20 +19,7 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 check = [
-    "bandit",
-    "darglint",
-    "flake8",
-    "flake8-annotations-complexity",
-    "flake8-bugbear",
-    "flake8-broken-line",
-    "flake8-commas",
-    "flake8-comprehensions",
-    "flake8-expression-complexity",
-    "flake8-import-order",
-    "flake8-quotes",
-    "flake8-rst-docstrings",
-    "flake8-simplify",
-    "pep8-naming",
+    "ruff",
 ]
 test = [
     "coverage",
@@ -46,7 +33,6 @@ Homepage = "https://github.com/akaIDIOT/Digestive"
 [project.scripts]
 digestive = "digestive.main:main"
 
-
 [tool.pdm.scripts]
 all = {composite = [
     "check",
@@ -54,10 +40,28 @@ all = {composite = [
 ]}
 check = {composite = [
     "pdm lock --check",
-    "bandit --recursive digestive/",
-    "flake8 --max-line-length 120 --import-order-style google --application-import-names digestive --docstring-style sphinx digestive/",
+    "ruff format --diff digestive/ tests/",
+    "ruff check digestive/ tests/",
+]}
+fix = {composite = [
+    "ruff format digestive/ tests/",
+    "ruff check --fix digestive/ tests/",
 ]}
 test = {composite = [
     "coverage run --branch --source digestive --module pytest tests/",
     "coverage report",
 ]}
+
+[tool.ruff]
+format.quote-style = "single"
+lint.flake8-quotes.inline-quotes = "single"
+line-length = 120
+lint.ignore = ["COM812", "S324"]
+lint.isort.lines-after-imports = 2
+lint.select = [
+    "B", "C4", "COM", "E", "F", "N", "Q", "S", "SIM", "W",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# allow assertions in tests
+"tests/**" = ['S101']

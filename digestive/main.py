@@ -64,42 +64,68 @@ def parse_arguments(arguments=None):
     """
     parser = ArgumentParser(description='run multiple digests on files')
     # hash digest sinks
-    parser.add_argument('-m', '--md5', action='append_const', dest='sinks', const=MD5,
-                        help='calculate MD5 hash')
-    parser.add_argument('-1', '--sha1', action='append_const', dest='sinks', const=SHA1,
-                        help='calculate SHA-1 hash')
-    parser.add_argument('-2', '--sha256', action='append_const', dest='sinks', const=SHA256,
-                        help='calculate SHA-256 hash')
-    parser.add_argument('-5', '--sha512', action='append_const', dest='sinks', const=SHA512,
-                        help='calculate SHA-512 hash')
-    parser.add_argument('-3', '--sha3-256', action='append_const', dest='sinks', const=SHA3256,
-                        help='calculate SHA3-256 hash')
-    parser.add_argument('--sha3-512', action='append_const', dest='sinks', const=SHA3512,
-                        help='calculate SHA3-512 hash')
+    parser.add_argument('-m', '--md5', action='append_const', dest='sinks', const=MD5, help='calculate MD5 hash')
+    parser.add_argument('-1', '--sha1', action='append_const', dest='sinks', const=SHA1, help='calculate SHA-1 hash')
+    parser.add_argument(
+        '-2', '--sha256', action='append_const', dest='sinks', const=SHA256, help='calculate SHA-256 hash'
+    )
+    parser.add_argument(
+        '-5', '--sha512', action='append_const', dest='sinks', const=SHA512, help='calculate SHA-512 hash'
+    )
+    parser.add_argument(
+        '-3', '--sha3-256', action='append_const', dest='sinks', const=SHA3256, help='calculate SHA3-256 hash'
+    )
+    parser.add_argument(
+        '--sha3-512', action='append_const', dest='sinks', const=SHA3512, help='calculate SHA3-512 hash'
+    )
 
     hashes = [MD5, SHA1, SHA256, SHA512, SHA3256]
     # convenience switch to include all hashes
-    parser.add_argument('--hashes', action='store_const', dest='sinks', const=hashes,
-                        help='calculate MD5, SHA-1, SHA-256, SHA-512 and SHA3-256 hashes (equivalent to -m1253)')
+    parser.add_argument(
+        '--hashes',
+        action='store_const',
+        dest='sinks',
+        const=hashes,
+        help='calculate MD5, SHA-1, SHA-256, SHA-512 and SHA3-256 hashes (equivalent to -m1253)',
+    )
     # entropy sink
-    parser.add_argument('-e', '--entropy', action='append_const', dest='sinks', const=Entropy,
-                        help='calculate binary entropy')
+    parser.add_argument(
+        '-e', '--entropy', action='append_const', dest='sinks', const=Entropy, help='calculate binary entropy'
+    )
     # misc options
-    parser.add_argument('-j', '--jobs', type=int, metavar='JOBS',
-                        help='use up to %(metavar)s threads to process digests (defaults to the number of digests)')
-    parser.add_argument('-b', '--block-size', type=num_bytes, metavar='BYTES', default='1M',
-                        help='read data in chunks of %(metavar)s at a time (defaults to 1M)')
-    parser.add_argument('-p', '--progress', choices=('bytes', 'speed'), default='bytes',
-                        help='show progress information (defaults to bytes)')
-    parser.add_argument('-P', '--no-progress', action='store_false', dest='progress',
-                        help='disable progress output (always disabled for redirected output)')
-    parser.add_argument('-r', '--recursive', action='store_true',
-                        help='process sources recursively')
-    parser.add_argument('-o', '--output',
-                        help='write yaml-encoded output to file')
+    parser.add_argument(
+        '-j',
+        '--jobs',
+        type=int,
+        metavar='JOBS',
+        help='use up to %(metavar)s threads to process digests (defaults to the number of digests)',
+    )
+    parser.add_argument(
+        '-b',
+        '--block-size',
+        type=num_bytes,
+        metavar='BYTES',
+        default='1M',
+        help='read data in chunks of %(metavar)s at a time (defaults to 1M)',
+    )
+    parser.add_argument(
+        '-p',
+        '--progress',
+        choices=('bytes', 'speed'),
+        default='bytes',
+        help='show progress information (defaults to bytes)',
+    )
+    parser.add_argument(
+        '-P',
+        '--no-progress',
+        action='store_false',
+        dest='progress',
+        help='disable progress output (always disabled for redirected output)',
+    )
+    parser.add_argument('-r', '--recursive', action='store_true', help='process sources recursively')
+    parser.add_argument('-o', '--output', help='write yaml-encoded output to file')
     # positional arguments: sources
-    parser.add_argument('sources', metavar='FILE', nargs='+',
-                        help='input files')
+    parser.add_argument('sources', metavar='FILE', nargs='+', help='input files')
 
     arguments = parser.parse_args(arguments)
     process_arguments(arguments, parser)
@@ -191,11 +217,9 @@ def files(sources, recurse=False, followlinks=False):
 class Progress:
     types = {
         # show progress as total bytes processed
-        'bytes': lambda processed, elapsed: file_size(processed,
-                                                      template='{value:>8.3f} {unit}'),
+        'bytes': lambda processed, elapsed: file_size(processed, template='{value:>8.3f} {unit}'),
         # show progress as bytes processed per second (use arbitrary value to avoid division by zero)
-        'speed': lambda processed, elapsed: file_size(processed / (elapsed or 1.0),
-                                                      template='{value:>8.3f} {unit}/s'),
+        'speed': lambda processed, elapsed: file_size(processed / (elapsed or 1.0), template='{value:>8.3f} {unit}/s'),
     }
 
     def __init__(self, source, progress='bytes'):
@@ -215,11 +239,14 @@ class Progress:
 
     def print_progress(self):
         # use terminal escape to clear line and \r return cursor to start of line, followed by actual progress info
-        print('\033[2K\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
-            percent=(self.value / self.end),
-            bar=('»' * int((20 * self.value / self.end))),
-            value=self.progress(processed=self.value, elapsed=time.monotonic() - self.started),
-        ), end='')
+        print(
+            '\033[2K\r  {percent:>4.0%} [{bar:<20}] ({value})'.format(
+                percent=(self.value / self.end),
+                bar=('»' * int((20 * self.value / self.end))),
+                value=self.progress(processed=self.value, elapsed=time.monotonic() - self.started),
+            ),
+            end='',
+        )
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         print('\033[2K\r', end='')
@@ -236,8 +263,7 @@ def main(arguments=None):
     output = output_to_file(arguments.output)
     # initialize output (moves it to the first occurrence of yield)
     next(output)
-    info = {'digestive': str(digestive.__version__),
-            'started': datetime.now(tz=timezone.utc)}
+    info = {'digestive': str(digestive.__version__), 'started': datetime.now(tz=timezone.utc)}
     output.send(info)
 
     with ThreadPoolExecutor(arguments.jobs) as executor:
@@ -261,9 +287,7 @@ def main(arguments=None):
 
                 # create meta data leader
                 # TODO: using kwargs here would be nice, but that destroys order :( (see PEP-468)
-                info = {'source': file,
-                        'size': size,
-                        'completed': datetime.now(tz=timezone.utc)}
+                info = {'source': file, 'size': size, 'completed': datetime.now(tz=timezone.utc)}
                 # add results
                 info.update(results)
                 # send info to the output collector
