@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          lfs: true
       - uses: pdm-project/setup-pdm@v4
         with:
           python-version: '3.14'
@@ -22,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          lfs: true
       - uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
