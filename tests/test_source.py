@@ -40,7 +40,7 @@ def test_blocks():
     source = Source(path.join(here, 'files/1234'))
 
     with source:
-        for (read, expected) in zip(source.blocks(2), (b'\x01\x02', b'\x03\x04')):
+        for read, expected in zip(source.blocks(2), (b'\x01\x02', b'\x03\x04')):
             assert read == expected
 
     with source:

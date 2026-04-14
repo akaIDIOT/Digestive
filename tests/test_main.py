@@ -192,11 +192,14 @@ def test_main():
         main(arguments)
         # assert recursing into files and processing the test files, posting results to output
         output.assert_called_with('/dev/null')
-        output_generator.send.assert_has_calls([
-            # initial info call
-            call({'digestive': '0.1', 'started': ANY}),
-            # hashes of tests/files/1234
-            call(four_bytes_output),
-            # hashes of tests/files/random.dd
-            call(random_dd_output)
-        ], any_order=True)
+        output_generator.send.assert_has_calls(
+            [
+                # initial info call
+                call({'digestive': '0.1', 'started': ANY}),
+                # hashes of tests/files/1234
+                call(four_bytes_output),
+                # hashes of tests/files/random.dd
+                call(random_dd_output),
+            ],
+            any_order=True,
+        )
