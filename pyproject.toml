@@ -1,0 +1,63 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "digestive"
+version = "0.1"
+description = "Run several digest algorithms on the same data efficiently"
+readme = "README.md"
+authors = [
+    {name = "Mattijs Ugen"},
+]
+dependencies = [
+    "decorator",
+    "pyyaml",
+]
+license = {text = "ISC"}
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+check = [
+    "bandit",
+    "darglint",
+    "flake8",
+    "flake8-annotations-complexity",
+    "flake8-bugbear",
+    "flake8-broken-line",
+    "flake8-commas",
+    "flake8-comprehensions",
+    "flake8-expression-complexity",
+    "flake8-import-order",
+    "flake8-quotes",
+    "flake8-rst-docstrings",
+    "flake8-simplify",
+    "pep8-naming",
+]
+test = [
+    "coverage",
+    "pyhamcrest",
+    "pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/akaIDIOT/Digestive"
+
+[project.scripts]
+digestive = "digestive.main:main"
+
+
+[tool.pdm.scripts]
+all = {composite = [
+    "check",
+    "test",
+]}
+check = {composite = [
+    "pdm lock --check",
+    "bandit --recursive digestive/",
+    "flake8 --max-line-length 120 --import-order-style google --application-import-names digestive --docstring-style sphinx digestive/",
+]}
+test = {composite = [
+    "coverage run --branch --source digestive --module pytest tests/",
+    "coverage report",
+]}
