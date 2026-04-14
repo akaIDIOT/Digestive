@@ -1,0 +1,67 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "digestive"
+version = "0.1"
+description = "Run several digest algorithms on the same data efficiently"
+readme = "README.md"
+authors = [
+    {name = "Mattijs Ugen"},
+]
+dependencies = [
+    "decorator",
+    "pyyaml",
+]
+license = {text = "ISC"}
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+check = [
+    "ruff",
+]
+test = [
+    "coverage",
+    "pyhamcrest",
+    "pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/akaIDIOT/Digestive"
+
+[project.scripts]
+digestive = "digestive.main:main"
+
+[tool.pdm.scripts]
+all = {composite = [
+    "check",
+    "test",
+]}
+check = {composite = [
+    "pdm lock --check",
+    "ruff format --diff digestive/ tests/",
+    "ruff check digestive/ tests/",
+]}
+fix = {composite = [
+    "ruff format digestive/ tests/",
+    "ruff check --fix digestive/ tests/",
+]}
+test = {composite = [
+    "coverage run --branch --source digestive --module pytest tests/",
+    "coverage report",
+]}
+
+[tool.ruff]
+format.quote-style = "single"
+lint.flake8-quotes.inline-quotes = "single"
+line-length = 120
+lint.ignore = ["COM812", "S324"]
+lint.isort.lines-after-imports = 2
+lint.select = [
+    "B", "C4", "COM", "E", "F", "N", "Q", "S", "SIM", "W",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# allow assertions in tests
+"tests/**" = ['S101']
