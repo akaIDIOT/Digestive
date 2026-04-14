@@ -33,7 +33,6 @@ Homepage = "https://github.com/akaIDIOT/Digestive"
 [project.scripts]
 digestive = "digestive.main:main"
 
-
 [tool.pdm.scripts]
 all = {composite = [
     "check",
